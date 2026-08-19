@@ -5,10 +5,9 @@ import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import CheckEmailPage from './pages/auth/CheckEmailPage'
 import EmailConfirmedPage from './pages/auth/EmailConfirmedPage'
-import { useAuth } from './auth/AuthContext'
+import RequireAuth from './auth/RequireAuth'
 
 function Home() {
-  const { user, loading } = useAuth()
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState('')
 
@@ -37,23 +36,15 @@ function Home() {
         <p className="text-lg text-gray-600 mb-8">
           Fundación técnica en construcción
         </p>
-        <p className="text-lg text-gray-600 mb-4">
-          {loading
-            ? 'Comprobando sesión...'
-            : user
-              ? 'Sesión activa'
-              : 'Sin sesión'}
-        </p>
-        {user && !loading && (
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-            className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSigningOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
-          </button>
-        )}
+        <p className="text-lg text-gray-600 mb-4">Sesión activa</p>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={isSigningOut}
+          className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSigningOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
+        </button>
         {signOutError && (
           <p role="alert" className="mt-4 text-sm text-red-600">
             {signOutError}
@@ -67,7 +58,14 @@ function Home() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route
+        path="/"
+        element={
+          <RequireAuth>
+            <Home />
+          </RequireAuth>
+        }
+      />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/check-email" element={<CheckEmailPage />} />
