@@ -3,8 +3,11 @@ import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import CheckEmailPage from './pages/auth/CheckEmailPage'
 import EmailConfirmedPage from './pages/auth/EmailConfirmedPage'
+import { useAuth } from './auth/AuthContext'
 
 function Home() {
+  const { user, loading } = useAuth()
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center py-8">
@@ -13,6 +16,13 @@ function Home() {
         </h1>
         <p className="text-lg text-gray-600 mb-8">
           Fundación técnica en construcción
+        </p>
+        <p className="text-lg text-gray-600">
+          {loading
+            ? 'Comprobando sesión...'
+            : user
+              ? 'Sesión activa'
+              : 'Sin sesión'}
         </p>
       </div>
     </div>
