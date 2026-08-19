@@ -7,10 +7,27 @@ import { getCategoriesForSpace } from '../domain/getCategoriesForSpace'
 import type { SpaceCategory } from '../domain/getCategoriesForSpace'
 import { createCategory } from '../domain/createCategory'
 import { updateCategory } from '../domain/updateCategory'
+import { createPersonalExpense } from '../domain/createPersonalExpense'
+import { getPersonalExpenses } from '../domain/getPersonalExpenses'
+import type { PersonalExpense } from '../domain/getPersonalExpenses'
+
+function getTodayLocalDate() {
+  const today = new Date()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+
+  return `${today.getFullYear()}-${month}-${day}`
+}
+
+const currencyFormatter = new Intl.NumberFormat('es-AR', {
+  style: 'currency',
+  currency: 'ARS',
+})
 
 function PersonalSpacePage() {
   const [space, setSpace] = useState<PersonalSpace | null>(null)
   const [categories, setCategories] = useState<SpaceCategory[]>([])
+  const [expenses, setExpenses] = useState<PersonalExpense[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isSigningOut, setIsSigningOut] = useState(false)
@@ -21,6 +38,12 @@ function PersonalSpacePage() {
   const [editingCategoryName, setEditingCategoryName] = useState('')
   const [categoryError, setCategoryError] = useState('')
   const [isCategorySubmitting, setIsCategorySubmitting] = useState(false)
+  const [expenseAmount, setExpenseAmount] = useState('')
+  const [expenseDate, setExpenseDate] = useState(getTodayLocalDate)
+  const [expenseCategoryId, setExpenseCategoryId] = useState('')
+  const [expenseDescription, setExpenseDescription] = useState('')
+  const [expenseError, setExpenseError] = useState('')
+  const [isExpenseSubmitting, setIsExpenseSubmitting] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -30,11 +53,15 @@ function PersonalSpacePage() {
 
     getPersonalSpace()
       .then(async (personalSpace) => {
-        const personalSpaceCategories = await getCategoriesForSpace(personalSpace.id)
+        const [personalSpaceCategories, personalSpaceExpenses] = await Promise.all([
+          getCategoriesForSpace(personalSpace.id),
+          getPersonalExpenses(personalSpace.id),
+        ])
 
         if (isMounted) {
           setSpace(personalSpace)
           setCategories(personalSpaceCategories)
+          setExpenses(personalSpaceExpenses)
         }
       })
       .catch((loadError: unknown) => {
@@ -168,6 +195,45 @@ function PersonalSpacePage() {
     }
   }
 
+  async function handleCreateExpense(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!space || isExpenseSubmitting) {
+      return
+    }
+
+    const trimmedAmount = expenseAmount.trim()
+
+    if (!/^[0-9]+(?:\.[0-9]{1,2})?$/.test(trimmedAmount) || Number(trimmedAmount) <= 0) {
+      setExpenseError('El monto debe ser mayor a cero y tener como máximo dos decimales.')
+      return
+    }
+
+    setExpenseError('')
+    setIsExpenseSubmitting(true)
+
+    try {
+      await createPersonalExpense({
+        categoriaId: expenseCategoryId,
+        monto: trimmedAmount,
+        fecha: expenseDate,
+        descripcion: expenseDescription,
+      })
+      setExpenses(await getPersonalExpenses(space.id))
+      setExpenseAmount('')
+      setExpenseDescription('')
+      setExpenseDate(getTodayLocalDate())
+    } catch (createError: unknown) {
+      setExpenseError(
+        createError instanceof Error
+          ? createError.message
+          : 'No se pudo registrar el gasto.',
+      )
+    } finally {
+      setIsExpenseSubmitting(false)
+    }
+  }
+
   if (isLoading) {
     return <p>{space ? 'Cargando categorías...' : 'Cargando Mis gastos...'}</p>
   }
@@ -274,6 +340,99 @@ function PersonalSpacePage() {
             </li>
           ))}
         </ul>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-3">Agregar gasto</h2>
+        <form onSubmit={handleCreateExpense} className="mb-8 space-y-4 text-left">
+          <div>
+            <label htmlFor="expense-amount" className="block text-sm font-semibold text-gray-700 mb-1">
+              Monto
+            </label>
+            <input
+              id="expense-amount"
+              type="text"
+              inputMode="decimal"
+              value={expenseAmount}
+              onChange={(event) => setExpenseAmount(event.target.value)}
+              required
+              disabled={isExpenseSubmitting}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+            />
+          </div>
+          <div>
+            <label htmlFor="expense-date" className="block text-sm font-semibold text-gray-700 mb-1">
+              Fecha
+            </label>
+            <input
+              id="expense-date"
+              type="date"
+              value={expenseDate}
+              onChange={(event) => setExpenseDate(event.target.value)}
+              required
+              disabled={isExpenseSubmitting}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+            />
+          </div>
+          <div>
+            <label htmlFor="expense-category" className="block text-sm font-semibold text-gray-700 mb-1">
+              Categoría
+            </label>
+            <select
+              id="expense-category"
+              value={expenseCategoryId}
+              onChange={(event) => setExpenseCategoryId(event.target.value)}
+              required
+              disabled={isExpenseSubmitting}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+            >
+              <option value="">Seleccioná una categoría</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="expense-description" className="block text-sm font-semibold text-gray-700 mb-1">
+              Descripción (opcional)
+            </label>
+            <input
+              id="expense-description"
+              type="text"
+              value={expenseDescription}
+              onChange={(event) => setExpenseDescription(event.target.value)}
+              disabled={isExpenseSubmitting}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+            />
+          </div>
+          {expenseError && (
+            <p role="alert" className="text-sm text-red-600">
+              {expenseError}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={isExpenseSubmitting || categories.length === 0}
+            className="w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isExpenseSubmitting ? 'Guardando gasto...' : 'Agregar gasto'}
+          </button>
+        </form>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-3">Gastos</h2>
+        {expenses.length === 0 ? (
+          <p className="mb-8 text-gray-600">Todavía no registraste gastos.</p>
+        ) : (
+          <ul className="mb-8 space-y-4 text-left text-gray-600">
+            {expenses.map((expense) => (
+              <li key={expense.id} className="border-b border-gray-200 pb-3">
+                <p className="font-semibold text-gray-900">
+                  {currencyFormatter.format(Number(expense.monto))}
+                </p>
+                <p>{expense.fecha} · {expense.categoria.nombre}</p>
+                {expense.descripcion && <p>{expense.descripcion}</p>}
+              </li>
+            ))}
+          </ul>
+        )}
         <button
           type="button"
           onClick={handleSignOut}
