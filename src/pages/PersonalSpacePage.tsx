@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { getPersonalSpace } from '../domain/getPersonalSpace'
 import type { PersonalSpace } from '../domain/getPersonalSpace'
+import { getCategoriesForSpace } from '../domain/getCategoriesForSpace'
+import type { SpaceCategory } from '../domain/getCategoriesForSpace'
 
 function PersonalSpacePage() {
   const [space, setSpace] = useState<PersonalSpace | null>(null)
+  const [categories, setCategories] = useState<SpaceCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isSigningOut, setIsSigningOut] = useState(false)
@@ -18,9 +21,12 @@ function PersonalSpacePage() {
     setError('')
 
     getPersonalSpace()
-      .then((personalSpace) => {
+      .then(async (personalSpace) => {
+        const personalSpaceCategories = await getCategoriesForSpace(personalSpace.id)
+
         if (isMounted) {
           setSpace(personalSpace)
+          setCategories(personalSpaceCategories)
         }
       })
       .catch((loadError: unknown) => {
@@ -60,7 +66,7 @@ function PersonalSpacePage() {
   }
 
   if (isLoading) {
-    return <p>Cargando Mis gastos...</p>
+    return <p>{space ? 'Cargando categorías...' : 'Cargando Mis gastos...'}</p>
   }
 
   if (error || !space) {
@@ -86,7 +92,13 @@ function PersonalSpacePage() {
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center py-8">
         <h1 className="text-5xl font-bold text-gray-900 mb-4">{space.nombre}</h1>
-        <p className="text-lg text-gray-600 mb-8">Este es tu espacio personal.</p>
+        <p className="text-lg text-gray-600 mb-6">Este es tu espacio personal.</p>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-3">Categorías</h2>
+        <ul className="mb-8 space-y-2 text-gray-600">
+          {categories.map((category) => (
+            <li key={category.id}>{category.nombre}</li>
+          ))}
+        </ul>
         <button
           type="button"
           onClick={handleSignOut}
