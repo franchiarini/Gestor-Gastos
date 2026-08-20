@@ -13,6 +13,9 @@ import { deletePersonalExpense } from '../domain/deletePersonalExpense'
 import { deleteCategory } from '../domain/deleteCategory'
 import { getPersonalExpenses } from '../domain/getPersonalExpenses'
 import type { PersonalExpense } from '../domain/getPersonalExpenses'
+import { createSharedSpace } from '../domain/createSharedSpace'
+import { getSharedSpaces } from '../domain/getSharedSpaces'
+import type { SharedSpace } from '../domain/getSharedSpaces'
 
 function getTodayLocalDate() {
   const today = new Date()
@@ -52,6 +55,11 @@ function PersonalSpacePage() {
   const [editingExpenseDate, setEditingExpenseDate] = useState('')
   const [editingExpenseCategoryId, setEditingExpenseCategoryId] = useState('')
   const [editingExpenseDescription, setEditingExpenseDescription] = useState('')
+  const [sharedSpaces, setSharedSpaces] = useState<SharedSpace[]>([])
+  const [newSharedSpaceName, setNewSharedSpaceName] = useState('')
+  const [createdAccessCode, setCreatedAccessCode] = useState('')
+  const [sharedSpaceError, setSharedSpaceError] = useState('')
+  const [isSharedSpaceSubmitting, setIsSharedSpaceSubmitting] = useState(false)
 
   const activeCategories = categories.filter((category) => category.estado === 'ACTIVA')
   const archivedCategories = categories.filter(
@@ -66,15 +74,17 @@ function PersonalSpacePage() {
 
     getPersonalSpace()
       .then(async (personalSpace) => {
-        const [personalSpaceCategories, personalSpaceExpenses] = await Promise.all([
+        const [personalSpaceCategories, personalSpaceExpenses, userSharedSpaces] = await Promise.all([
           getCategoriesForSpace(personalSpace.id),
           getPersonalExpenses(personalSpace.id),
+          getSharedSpaces(),
         ])
 
         if (isMounted) {
           setSpace(personalSpace)
           setCategories(personalSpaceCategories)
           setExpenses(personalSpaceExpenses)
+          setSharedSpaces(userSharedSpaces)
         }
       })
       .catch((loadError: unknown) => {
@@ -357,6 +367,51 @@ function PersonalSpacePage() {
       )
     } finally {
       setIsExpenseSubmitting(false)
+    }
+  }
+
+  async function handleCreateSharedSpace(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (isSharedSpaceSubmitting) {
+      return
+    }
+
+    const trimmedName = newSharedSpaceName.trim()
+
+    if (!trimmedName) {
+      setSharedSpaceError('El nombre del espacio no puede estar vacío.')
+      return
+    }
+
+    setSharedSpaceError('')
+    setCreatedAccessCode('')
+    setIsSharedSpaceSubmitting(true)
+
+    try {
+      const createdSpace = await createSharedSpace(trimmedName)
+      setSharedSpaces((currentSpaces) =>
+        [
+          ...currentSpaces,
+          {
+            id: createdSpace.id,
+            nombre: createdSpace.nombre,
+            estado: 'ACTIVO',
+          },
+        ].sort((first, second) =>
+          first.nombre.localeCompare(second.nombre) || first.id.localeCompare(second.id),
+        ),
+      )
+      setCreatedAccessCode(createdSpace.codigoAcceso)
+      setNewSharedSpaceName('')
+    } catch (createError: unknown) {
+      setSharedSpaceError(
+        createError instanceof Error
+          ? createError.message
+          : 'No se pudo crear el espacio compartido.',
+      )
+    } finally {
+      setIsSharedSpaceSubmitting(false)
     }
   }
 
@@ -694,6 +749,54 @@ function PersonalSpacePage() {
             ))}
           </ul>
         )}
+        <section className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3">
+            Espacios compartidos
+          </h2>
+          {sharedSpaces.length === 0 ? (
+            <p className="mb-4 text-gray-600">
+              Todavía no pertenecés a ningún espacio compartido.
+            </p>
+          ) : (
+            <ul className="mb-4 space-y-2 text-left text-gray-600">
+              {sharedSpaces.map((sharedSpace) => (
+                <li key={sharedSpace.id}>{sharedSpace.nombre}</li>
+              ))}
+            </ul>
+          )}
+          <form onSubmit={handleCreateSharedSpace} className="flex gap-2">
+            <input
+              type="text"
+              value={newSharedSpaceName}
+              onChange={(event) => setNewSharedSpaceName(event.target.value)}
+              placeholder="Nombre del espacio"
+              required
+              disabled={isSharedSpaceSubmitting}
+              className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
+            />
+            <button
+              type="submit"
+              disabled={isSharedSpaceSubmitting}
+              className="rounded bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSharedSpaceSubmitting ? 'Creando...' : 'Crear espacio'}
+            </button>
+          </form>
+          {sharedSpaceError && (
+            <p role="alert" className="mt-3 text-sm text-red-600">
+              {sharedSpaceError}
+            </p>
+          )}
+          {createdAccessCode && (
+            <p className="mt-3 text-gray-700">
+              Código de acceso:{' '}
+              <span className="font-semibold">
+                {createdAccessCode.slice(0, 4)}-{createdAccessCode.slice(4)}
+              </span>
+              . Podés compartirlo con otras personas.
+            </p>
+          )}
+        </section>
         <button
           type="button"
           onClick={handleSignOut}
