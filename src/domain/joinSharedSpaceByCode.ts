@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 
-export type SharedSpaceJoinResult = 'JOINED' | 'REACTIVATED' | 'ALREADY_MEMBER'
+export type SharedSpaceJoinResult = 'JOINED' | 'REACTIVATED' | 'ALREADY_MEMBER' | 'EXPELLED'
 
 export type JoinedSharedSpace = {
   espacioId: string
@@ -27,6 +27,10 @@ export async function joinSharedSpaceByCode(codigo: string): Promise<JoinedShare
 
   if (!row) {
     throw new Error('No se recibió el resultado de la unión al espacio.')
+  }
+
+  if (row.resultado === 'EXPELLED') {
+    throw new Error('No podés volver a unirte automáticamente a este espacio.')
   }
 
   return {

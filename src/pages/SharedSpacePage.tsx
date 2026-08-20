@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { getSharedSpaceContext } from '../domain/getSharedSpaceContext'
 import type { SharedSpaceContext } from '../domain/getSharedSpaceContext'
 import { getSharedSpaceMembers } from '../domain/getSharedSpaceMembers'
@@ -17,6 +17,8 @@ import { getSharedSpaceManagement } from '../domain/getSharedSpaceManagement'
 import type { SharedSpaceManagement } from '../domain/getSharedSpaceManagement'
 import { regenerateSharedSpaceCode } from '../domain/regenerateSharedSpaceCode'
 import { promoteSharedSpaceMember } from '../domain/promoteSharedSpaceMember'
+import { leaveSharedSpace } from '../domain/leaveSharedSpace'
+import { expelSharedSpaceMember } from '../domain/expelSharedSpaceMember'
 
 function getTodayLocalDate() {
   const today = new Date()
@@ -36,6 +38,7 @@ function isValidAmount(amount: string) {
 
 function SharedSpacePage() {
   const { spaceId } = useParams<{ spaceId: string }>()
+  const navigate = useNavigate()
   const [context, setContext] = useState<SharedSpaceContext | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -331,6 +334,43 @@ function SharedSpacePage() {
     }
   }
 
+  async function handleExpelMember(member: SharedSpaceMember) {
+    if (!spaceId || isManagementSubmitting) return
+    if (!window.confirm(`¿Expulsar a ${member.nombre} del espacio?`)) return
+    setManagementError('')
+    setManagementMessage('')
+    setIsManagementSubmitting(true)
+    try {
+      await expelSharedSpaceMember(spaceId, member.membresiaId)
+      const [activeMembers, sharedExpenses] = await Promise.all([
+        getSharedSpaceMembers(spaceId),
+        getSharedExpenses(spaceId),
+      ])
+      setMembers(activeMembers)
+      setExpenses(sharedExpenses)
+      setManagementMessage('Integrante expulsado correctamente.')
+    } catch (requestError: unknown) {
+      setManagementError(requestError instanceof Error ? requestError.message : 'No se pudo expulsar al integrante.')
+    } finally {
+      setIsManagementSubmitting(false)
+    }
+  }
+
+  async function handleLeaveSpace() {
+    if (!spaceId || isManagementSubmitting) return
+    if (!window.confirm('¿Abandonar este espacio compartido?')) return
+    setManagementError('')
+    setManagementMessage('')
+    setIsManagementSubmitting(true)
+    try {
+      await leaveSharedSpace(spaceId)
+      navigate('/')
+    } catch (requestError: unknown) {
+      setManagementError(requestError instanceof Error ? requestError.message : 'No se pudo abandonar el espacio.')
+      setIsManagementSubmitting(false)
+    }
+  }
+
   if (isLoading) {
     return <p>Cargando espacio compartido...</p>
   }
@@ -390,11 +430,18 @@ function SharedSpacePage() {
                     <span>
                       {member.nombre} · {member.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
                     </span>
-                    {management.rol === 'ADMIN' && member.rol === 'INTEGRANTE' && (
-                      <button type="button" onClick={() => handlePromoteMember(member)} disabled={isManagementSubmitting} className="font-semibold text-blue-600 disabled:opacity-60">
-                        Promover a administrador
-                      </button>
-                    )}
+                    <span className="flex gap-3">
+                      {management.rol === 'ADMIN' && member.rol === 'INTEGRANTE' && (
+                        <button type="button" onClick={() => handlePromoteMember(member)} disabled={isManagementSubmitting} className="font-semibold text-blue-600 disabled:opacity-60">
+                          Promover a administrador
+                        </button>
+                      )}
+                      {management.rol === 'ADMIN' && member.membresiaId !== management.membresiaId && (
+                        <button type="button" onClick={() => handleExpelMember(member)} disabled={isManagementSubmitting} className="font-semibold text-red-600 disabled:opacity-60">
+                          Expulsar
+                        </button>
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -535,6 +582,9 @@ function SharedSpacePage() {
         <Link to="/" className="font-semibold text-blue-600 hover:underline">
           Volver a Mis gastos
         </Link>
+        <button type="button" onClick={handleLeaveSpace} disabled={isManagementSubmitting} className="ml-4 font-semibold text-red-600 disabled:opacity-60">
+          Abandonar espacio
+        </button>
       </div>
     </main>
   )
