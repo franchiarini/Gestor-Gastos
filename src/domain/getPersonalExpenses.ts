@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 
 export type PersonalExpense = {
   id: string
+  categoriaId: string
   monto: string
   fecha: string
   descripcion: string | null
@@ -13,6 +14,7 @@ export type PersonalExpense = {
 
 type ExpenseRow = {
   id: string
+  categoria_id: string
   monto: string | number
   fecha: string
   descripcion: string | null
@@ -25,7 +27,7 @@ export async function getPersonalExpenses(
 ): Promise<PersonalExpense[]> {
   const { data, error } = await supabase
     .from('gastos')
-    .select('id, monto, fecha, descripcion, fecha_creacion, categorias(nombre)')
+    .select('id, categoria_id, monto, fecha, descripcion, fecha_creacion, categorias(nombre)')
     .eq('espacio_id', spaceId)
     .order('fecha', { ascending: false })
     .order('fecha_creacion', { ascending: false })
@@ -41,6 +43,7 @@ export async function getPersonalExpenses(
 
     return {
       id: expense.id,
+      categoriaId: expense.categoria_id,
       monto: String(expense.monto),
       fecha: expense.fecha,
       descripcion: expense.descripcion,

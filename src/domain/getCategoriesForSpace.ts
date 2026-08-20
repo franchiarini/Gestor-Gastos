@@ -13,7 +13,6 @@ export async function getCategoriesForSpace(
     .from('categorias')
     .select('id, nombre, estado')
     .eq('espacio_id', spaceId)
-    .eq('estado', 'ACTIVA')
     .order('nombre', { ascending: true })
 
   if (error) {

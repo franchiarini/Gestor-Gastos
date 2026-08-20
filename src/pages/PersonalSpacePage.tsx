@@ -8,6 +8,9 @@ import type { SpaceCategory } from '../domain/getCategoriesForSpace'
 import { createCategory } from '../domain/createCategory'
 import { updateCategory } from '../domain/updateCategory'
 import { createPersonalExpense } from '../domain/createPersonalExpense'
+import { updatePersonalExpense } from '../domain/updatePersonalExpense'
+import { deletePersonalExpense } from '../domain/deletePersonalExpense'
+import { deleteCategory } from '../domain/deleteCategory'
 import { getPersonalExpenses } from '../domain/getPersonalExpenses'
 import type { PersonalExpense } from '../domain/getPersonalExpenses'
 
@@ -44,6 +47,16 @@ function PersonalSpacePage() {
   const [expenseDescription, setExpenseDescription] = useState('')
   const [expenseError, setExpenseError] = useState('')
   const [isExpenseSubmitting, setIsExpenseSubmitting] = useState(false)
+  const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null)
+  const [editingExpenseAmount, setEditingExpenseAmount] = useState('')
+  const [editingExpenseDate, setEditingExpenseDate] = useState('')
+  const [editingExpenseCategoryId, setEditingExpenseCategoryId] = useState('')
+  const [editingExpenseDescription, setEditingExpenseDescription] = useState('')
+
+  const activeCategories = categories.filter((category) => category.estado === 'ACTIVA')
+  const archivedCategories = categories.filter(
+    (category) => category.estado === 'ARCHIVADA',
+  )
 
   useEffect(() => {
     let isMounted = true
@@ -182,13 +195,44 @@ function PersonalSpacePage() {
     try {
       await updateCategory(categoryId, { estado: 'ARCHIVADA' })
       setCategories((currentCategories) =>
-        currentCategories.filter((category) => category.id !== categoryId),
+        currentCategories.map((category) =>
+          category.id === categoryId
+            ? { ...category, estado: 'ARCHIVADA' }
+            : category,
+        ),
       )
     } catch (archiveError: unknown) {
       setCategoryError(
         archiveError instanceof Error
           ? archiveError.message
           : 'No se pudo archivar la categoría.',
+      )
+    } finally {
+      setIsCategorySubmitting(false)
+    }
+  }
+
+  async function handleDeleteCategory(categoryId: string) {
+    if (isCategorySubmitting || !window.confirm('¿Eliminar esta categoría?')) {
+      return
+    }
+
+    setCategoryError('')
+    setIsCategorySubmitting(true)
+
+    try {
+      await deleteCategory(categoryId)
+      setCategories((currentCategories) =>
+        currentCategories.filter((category) => category.id !== categoryId),
+      )
+      if (editingCategoryId === categoryId) {
+        cancelEditingCategory()
+      }
+    } catch (deleteError: unknown) {
+      setCategoryError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : 'No se pudo eliminar la categoría.',
       )
     } finally {
       setIsCategorySubmitting(false)
@@ -228,6 +272,88 @@ function PersonalSpacePage() {
         createError instanceof Error
           ? createError.message
           : 'No se pudo registrar el gasto.',
+      )
+    } finally {
+      setIsExpenseSubmitting(false)
+    }
+  }
+
+  function startEditingExpense(expense: PersonalExpense) {
+    setExpenseError('')
+    setEditingExpenseId(expense.id)
+    setEditingExpenseAmount(expense.monto)
+    setEditingExpenseDate(expense.fecha)
+    setEditingExpenseCategoryId(expense.categoriaId)
+    setEditingExpenseDescription(expense.descripcion ?? '')
+  }
+
+  function cancelEditingExpense() {
+    setEditingExpenseId(null)
+    setEditingExpenseAmount('')
+    setEditingExpenseDate('')
+    setEditingExpenseCategoryId('')
+    setEditingExpenseDescription('')
+  }
+
+  async function handleUpdateExpense(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!space || !editingExpenseId || isExpenseSubmitting) {
+      return
+    }
+
+    const trimmedAmount = editingExpenseAmount.trim()
+
+    if (!/^[0-9]+(?:\.[0-9]{1,2})?$/.test(trimmedAmount) || Number(trimmedAmount) <= 0) {
+      setExpenseError('El monto debe ser mayor a cero y tener como máximo dos decimales.')
+      return
+    }
+
+    setExpenseError('')
+    setIsExpenseSubmitting(true)
+
+    try {
+      await updatePersonalExpense({
+        gastoId: editingExpenseId,
+        categoriaId: editingExpenseCategoryId,
+        monto: trimmedAmount,
+        fecha: editingExpenseDate,
+        descripcion: editingExpenseDescription,
+      })
+      setExpenses(await getPersonalExpenses(space.id))
+      cancelEditingExpense()
+    } catch (updateError: unknown) {
+      setExpenseError(
+        updateError instanceof Error
+          ? updateError.message
+          : 'No se pudo actualizar el gasto.',
+      )
+    } finally {
+      setIsExpenseSubmitting(false)
+    }
+  }
+
+  async function handleDeleteExpense(expenseId: string) {
+    if (isExpenseSubmitting || !window.confirm('¿Eliminar este gasto?')) {
+      return
+    }
+
+    setExpenseError('')
+    setIsExpenseSubmitting(true)
+
+    try {
+      await deletePersonalExpense(expenseId)
+      setExpenses((currentExpenses) =>
+        currentExpenses.filter((expense) => expense.id !== expenseId),
+      )
+      if (editingExpenseId === expenseId) {
+        cancelEditingExpense()
+      }
+    } catch (deleteError: unknown) {
+      setExpenseError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : 'No se pudo eliminar el gasto.',
       )
     } finally {
       setIsExpenseSubmitting(false)
@@ -286,7 +412,7 @@ function PersonalSpacePage() {
           </p>
         )}
         <ul className="mb-8 space-y-3 text-gray-600">
-          {categories.map((category) => (
+          {activeCategories.map((category) => (
             <li key={category.id} className="flex items-center justify-between gap-3">
               {editingCategoryId === category.id ? (
                 <>
@@ -334,12 +460,82 @@ function PersonalSpacePage() {
                     >
                       Archivar
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCategory(category.id)}
+                      disabled={isCategorySubmitting}
+                      className="text-red-600 font-semibold hover:underline disabled:opacity-60"
+                    >
+                      Eliminar
+                    </button>
                   </span>
                 </>
               )}
             </li>
           ))}
         </ul>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-3">
+          Categorías archivadas
+        </h2>
+        {archivedCategories.length === 0 ? (
+          <p className="mb-8 text-gray-600">No hay categorías archivadas.</p>
+        ) : (
+          <ul className="mb-8 space-y-3 text-gray-600">
+            {archivedCategories.map((category) => (
+              <li key={category.id} className="flex items-center justify-between gap-3">
+                {editingCategoryId === category.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editingCategoryName}
+                      onChange={(event) => setEditingCategoryName(event.target.value)}
+                      disabled={isCategorySubmitting}
+                      className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRenameCategory(category.id)}
+                      disabled={isCategorySubmitting}
+                      className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
+                    >
+                      Guardar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEditingCategory}
+                      disabled={isCategorySubmitting}
+                      className="text-gray-600 font-semibold hover:underline disabled:opacity-60"
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span>{category.nombre}</span>
+                    <span className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => startEditingCategory(category)}
+                        disabled={isCategorySubmitting}
+                        className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCategory(category.id)}
+                        disabled={isCategorySubmitting}
+                        className="text-red-600 font-semibold hover:underline disabled:opacity-60"
+                      >
+                        Eliminar
+                      </button>
+                    </span>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
         <h2 className="text-2xl font-semibold text-gray-900 mb-3">Agregar gasto</h2>
         <form onSubmit={handleCreateExpense} className="mb-8 space-y-4 text-left">
           <div>
@@ -384,7 +580,7 @@ function PersonalSpacePage() {
               className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
             >
               <option value="">Seleccioná una categoría</option>
-              {categories.map((category) => (
+              {activeCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.nombre}
                 </option>
@@ -411,7 +607,7 @@ function PersonalSpacePage() {
           )}
           <button
             type="submit"
-            disabled={isExpenseSubmitting || categories.length === 0}
+            disabled={isExpenseSubmitting || activeCategories.length === 0}
             className="w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isExpenseSubmitting ? 'Guardando gasto...' : 'Agregar gasto'}
@@ -424,11 +620,76 @@ function PersonalSpacePage() {
           <ul className="mb-8 space-y-4 text-left text-gray-600">
             {expenses.map((expense) => (
               <li key={expense.id} className="border-b border-gray-200 pb-3">
+                {editingExpenseId === expense.id ? (
+                  <form onSubmit={handleUpdateExpense} className="space-y-3">
+                    <input
+                      aria-label="Monto"
+                      type="text"
+                      inputMode="decimal"
+                      value={editingExpenseAmount}
+                      onChange={(event) => setEditingExpenseAmount(event.target.value)}
+                      required
+                      disabled={isExpenseSubmitting}
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+                    />
+                    <input
+                      aria-label="Fecha"
+                      type="date"
+                      value={editingExpenseDate}
+                      onChange={(event) => setEditingExpenseDate(event.target.value)}
+                      required
+                      disabled={isExpenseSubmitting}
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+                    />
+                    <select
+                      aria-label="Categoría"
+                      value={editingExpenseCategoryId}
+                      onChange={(event) => setEditingExpenseCategoryId(event.target.value)}
+                      required
+                      disabled={isExpenseSubmitting}
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+                    >
+                      <option value="">Seleccioná una categoría activa</option>
+                      {activeCategories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.nombre}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      aria-label="Descripción (opcional)"
+                      type="text"
+                      value={editingExpenseDescription}
+                      onChange={(event) => setEditingExpenseDescription(event.target.value)}
+                      disabled={isExpenseSubmitting}
+                      className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+                    />
+                    <div className="flex gap-3">
+                      <button type="submit" disabled={isExpenseSubmitting} className="text-blue-600 font-semibold hover:underline disabled:opacity-60">
+                        Guardar
+                      </button>
+                      <button type="button" onClick={cancelEditingExpense} disabled={isExpenseSubmitting} className="text-gray-600 font-semibold hover:underline disabled:opacity-60">
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
                 <p className="font-semibold text-gray-900">
                   {currencyFormatter.format(Number(expense.monto))}
                 </p>
                 <p>{expense.fecha} · {expense.categoria.nombre}</p>
                 {expense.descripcion && <p>{expense.descripcion}</p>}
+                    <div className="mt-2 flex gap-3">
+                      <button type="button" onClick={() => startEditingExpense(expense)} disabled={isExpenseSubmitting} className="text-blue-600 font-semibold hover:underline disabled:opacity-60">
+                        Editar
+                      </button>
+                      <button type="button" onClick={() => handleDeleteExpense(expense.id)} disabled={isExpenseSubmitting} className="text-red-600 font-semibold hover:underline disabled:opacity-60">
+                        Eliminar
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>
