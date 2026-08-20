@@ -13,6 +13,10 @@ import { deleteSharedExpense } from '../domain/deleteSharedExpense'
 import { createSharedCategory } from '../domain/createSharedCategory'
 import { updateSharedCategory } from '../domain/updateSharedCategory'
 import { deleteSharedCategory } from '../domain/deleteSharedCategory'
+import { getSharedSpaceManagement } from '../domain/getSharedSpaceManagement'
+import type { SharedSpaceManagement } from '../domain/getSharedSpaceManagement'
+import { regenerateSharedSpaceCode } from '../domain/regenerateSharedSpaceCode'
+import { promoteSharedSpaceMember } from '../domain/promoteSharedSpaceMember'
 
 function getTodayLocalDate() {
   const today = new Date()
@@ -55,6 +59,10 @@ function SharedSpacePage() {
   const [editingExpenseCategoryId, setEditingExpenseCategoryId] = useState('')
   const [editingPayerId, setEditingPayerId] = useState('')
   const [editingDescription, setEditingDescription] = useState('')
+  const [management, setManagement] = useState<SharedSpaceManagement | null>(null)
+  const [managementError, setManagementError] = useState('')
+  const [managementMessage, setManagementMessage] = useState('')
+  const [isManagementSubmitting, setIsManagementSubmitting] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -75,12 +83,14 @@ function SharedSpacePage() {
       getSharedSpaceContext(spaceId),
       getSharedSpaceMembers(spaceId),
       getSharedExpenses(spaceId),
+      getSharedSpaceManagement(spaceId),
     ])
-      .then(([sharedSpaceContext, activeMembers, sharedExpenses]) => {
+      .then(([sharedSpaceContext, activeMembers, sharedExpenses, sharedManagement]) => {
         if (isMounted) {
           setContext(sharedSpaceContext)
           setMembers(activeMembers)
           setExpenses(sharedExpenses)
+          setManagement(sharedManagement)
         }
       })
       .catch((loadError: unknown) => {
@@ -274,6 +284,53 @@ function SharedSpacePage() {
     }
   }
 
+  async function handleCopyAccessCode() {
+    if (!management) return
+    setManagementError('')
+    setManagementMessage('')
+    const formattedCode = `${management.codigoAcceso.slice(0, 4)}-${management.codigoAcceso.slice(4)}`
+    try {
+      await navigator.clipboard.writeText(formattedCode)
+      setManagementMessage('Código copiado.')
+    } catch {
+      setManagementError('No se pudo copiar el código. Seleccionalo y copialo manualmente.')
+    }
+  }
+
+  async function handleRegenerateAccessCode() {
+    if (!spaceId || !management || isManagementSubmitting) return
+    if (!window.confirm('¿Regenerar el código? El código anterior dejará de funcionar.')) return
+    setManagementError('')
+    setManagementMessage('')
+    setIsManagementSubmitting(true)
+    try {
+      const newCode = await regenerateSharedSpaceCode(spaceId)
+      setManagement({ ...management, codigoAcceso: newCode })
+      setManagementMessage('Código regenerado correctamente.')
+    } catch (requestError: unknown) {
+      setManagementError(requestError instanceof Error ? requestError.message : 'No se pudo regenerar el código.')
+    } finally {
+      setIsManagementSubmitting(false)
+    }
+  }
+
+  async function handlePromoteMember(member: SharedSpaceMember) {
+    if (!spaceId || isManagementSubmitting) return
+    if (!window.confirm(`¿Promover a ${member.nombre} a administrador?`)) return
+    setManagementError('')
+    setManagementMessage('')
+    setIsManagementSubmitting(true)
+    try {
+      await promoteSharedSpaceMember(spaceId, member.membresiaId)
+      setMembers(await getSharedSpaceMembers(spaceId))
+      setManagementMessage('Integrante promovido correctamente.')
+    } catch (requestError: unknown) {
+      setManagementError(requestError instanceof Error ? requestError.message : 'No se pudo promover al integrante.')
+    } finally {
+      setIsManagementSubmitting(false)
+    }
+  }
+
   if (isLoading) {
     return <p>Cargando espacio compartido...</p>
   }
@@ -305,6 +362,48 @@ function SharedSpacePage() {
         <p className="mb-8 text-gray-600">
           Rol: {context.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
         </p>
+
+        {management && (
+          <>
+            <section className="mb-8">
+              <h2 className="mb-3 text-2xl font-semibold text-gray-900">Código de acceso</h2>
+              <p className="mb-3 font-mono text-xl text-gray-800">
+                {management.codigoAcceso.slice(0, 4)}-{management.codigoAcceso.slice(4)}
+              </p>
+              <div className="flex gap-3">
+                <button type="button" onClick={handleCopyAccessCode} className="rounded bg-blue-600 px-3 py-2 font-semibold text-white">
+                  Copiar
+                </button>
+                {management.rol === 'ADMIN' && (
+                  <button type="button" onClick={handleRegenerateAccessCode} disabled={isManagementSubmitting} className="rounded bg-red-600 px-3 py-2 font-semibold text-white disabled:opacity-60">
+                    {isManagementSubmitting ? 'Procesando...' : 'Regenerar código'}
+                  </button>
+                )}
+              </div>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="mb-3 text-2xl font-semibold text-gray-900">Integrantes</h2>
+              <ul className="space-y-3 text-gray-600">
+                {members.map((member) => (
+                  <li key={member.membresiaId} className="flex items-center justify-between gap-3">
+                    <span>
+                      {member.nombre} · {member.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
+                    </span>
+                    {management.rol === 'ADMIN' && member.rol === 'INTEGRANTE' && (
+                      <button type="button" onClick={() => handlePromoteMember(member)} disabled={isManagementSubmitting} className="font-semibold text-blue-600 disabled:opacity-60">
+                        Promover a administrador
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            {managementError && <p role="alert" className="mb-4 text-sm text-red-600">{managementError}</p>}
+            {managementMessage && <p role="status" className="mb-4 text-sm text-green-700">{managementMessage}</p>}
+          </>
+        )}
 
         <section className="mb-8">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Categorías</h2>
