@@ -231,6 +231,28 @@ function PersonalSpacePage() {
     }
   }
 
+  async function handleRestoreCategory(categoryId: string) {
+    if (!space || isCategorySubmitting) {
+      return
+    }
+
+    setCategoryError('')
+    setIsCategorySubmitting(true)
+
+    try {
+      await updateCategory(categoryId, { restaurar: true })
+      setCategories(await getCategoriesForSpace(space.id))
+    } catch (restoreError: unknown) {
+      setCategoryError(
+        restoreError instanceof Error
+          ? restoreError.message
+          : 'No se pudo desarchivar la categoría.',
+      )
+    } finally {
+      setIsCategorySubmitting(false)
+    }
+  }
+
   async function handleDeleteCategory(categoryId: string) {
     if (isCategorySubmitting || !window.confirm('¿Eliminar esta categoría?')) {
       return
@@ -645,6 +667,14 @@ function PersonalSpacePage() {
                         className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
                       >
                         Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRestoreCategory(category.id)}
+                        disabled={isCategorySubmitting}
+                        className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
+                      >
+                        Desarchivar
                       </button>
                       <button
                         type="button"
