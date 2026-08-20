@@ -167,6 +167,20 @@ function SharedSpacePage() {
     }
   }
 
+  async function handleRestoreCategory(categoryToRestore: string) {
+    if (isCategorySubmitting) return
+    setCategoryError('')
+    setIsCategorySubmitting(true)
+    try {
+      await updateSharedCategory(categoryToRestore, { restaurar: true })
+      await refreshCategories()
+    } catch (requestError: unknown) {
+      setCategoryError(requestError instanceof Error ? requestError.message : 'No se pudo desarchivar la categoría.')
+    } finally {
+      setIsCategorySubmitting(false)
+    }
+  }
+
   async function handleDeleteCategory(categoryToDelete: string) {
     if (isCategorySubmitting || !window.confirm('¿Eliminar esta categoría?')) return
     setCategoryError('')
@@ -346,6 +360,7 @@ function SharedSpacePage() {
                       <span>{category.nombre}</span>
                       <span className="flex gap-3">
                         <button type="button" onClick={() => startEditingCategory(category)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Editar</button>
+                        <button type="button" onClick={() => handleRestoreCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Desarchivar</button>
                         <button type="button" onClick={() => handleDeleteCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-red-600">Eliminar</button>
                       </span>
                     </>
