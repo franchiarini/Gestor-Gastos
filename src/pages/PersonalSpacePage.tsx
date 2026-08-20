@@ -16,6 +16,9 @@ import type { PersonalExpense } from '../domain/getPersonalExpenses'
 import { createSharedSpace } from '../domain/createSharedSpace'
 import { getSharedSpaces } from '../domain/getSharedSpaces'
 import type { SharedSpace } from '../domain/getSharedSpaces'
+import { previewSharedSpaceByCode } from '../domain/previewSharedSpaceByCode'
+import type { SharedSpacePreview } from '../domain/previewSharedSpaceByCode'
+import { joinSharedSpaceByCode } from '../domain/joinSharedSpaceByCode'
 
 function getTodayLocalDate() {
   const today = new Date()
@@ -60,6 +63,11 @@ function PersonalSpacePage() {
   const [createdAccessCode, setCreatedAccessCode] = useState('')
   const [sharedSpaceError, setSharedSpaceError] = useState('')
   const [isSharedSpaceSubmitting, setIsSharedSpaceSubmitting] = useState(false)
+  const [accessCode, setAccessCode] = useState('')
+  const [sharedSpacePreview, setSharedSpacePreview] = useState<SharedSpacePreview | null>(null)
+  const [joinError, setJoinError] = useState('')
+  const [joinMessage, setJoinMessage] = useState('')
+  const [isJoinSubmitting, setIsJoinSubmitting] = useState(false)
 
   const activeCategories = categories.filter((category) => category.estado === 'ACTIVA')
   const archivedCategories = categories.filter(
@@ -412,6 +420,67 @@ function PersonalSpacePage() {
       )
     } finally {
       setIsSharedSpaceSubmitting(false)
+    }
+  }
+
+  async function handlePreviewSharedSpace(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (isJoinSubmitting) {
+      return
+    }
+
+    setJoinError('')
+    setJoinMessage('')
+    setSharedSpacePreview(null)
+    setIsJoinSubmitting(true)
+
+    try {
+      setSharedSpacePreview(await previewSharedSpaceByCode(accessCode))
+    } catch (previewError: unknown) {
+      setJoinError(
+        previewError instanceof Error
+          ? previewError.message
+          : 'No se pudo buscar el espacio compartido.',
+      )
+    } finally {
+      setIsJoinSubmitting(false)
+    }
+  }
+
+  async function handleJoinSharedSpace() {
+    if (!sharedSpacePreview || isJoinSubmitting) {
+      return
+    }
+
+    setJoinError('')
+    setJoinMessage('')
+    setIsJoinSubmitting(true)
+
+    try {
+      const result = await joinSharedSpaceByCode(accessCode)
+      setSharedSpaces(await getSharedSpaces())
+
+      if (result.resultado === 'ALREADY_MEMBER') {
+        setJoinMessage('Ya pertenecés a este espacio.')
+      } else {
+        setJoinMessage(
+          result.resultado === 'REACTIVATED'
+            ? 'Tu membresía fue reactivada correctamente.'
+            : 'Te uniste al espacio correctamente.',
+        )
+      }
+
+      setAccessCode('')
+      setSharedSpacePreview(null)
+    } catch (joinRequestError: unknown) {
+      setJoinError(
+        joinRequestError instanceof Error
+          ? joinRequestError.message
+          : 'No se pudo completar la unión al espacio.',
+      )
+    } finally {
+      setIsJoinSubmitting(false)
     }
   }
 
@@ -796,6 +865,59 @@ function PersonalSpacePage() {
               . Podés compartirlo con otras personas.
             </p>
           )}
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <form onSubmit={handlePreviewSharedSpace} className="flex gap-2">
+              <input
+                type="text"
+                value={accessCode}
+                onChange={(event) => {
+                  setAccessCode(event.target.value)
+                  setSharedSpacePreview(null)
+                  setJoinError('')
+                  setJoinMessage('')
+                }}
+                placeholder="Código de acceso"
+                aria-label="Código de acceso"
+                required
+                disabled={isJoinSubmitting}
+                className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
+              />
+              <button
+                type="submit"
+                disabled={isJoinSubmitting}
+                className="rounded bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isJoinSubmitting ? 'Buscando...' : 'Buscar'}
+              </button>
+            </form>
+            {joinError && (
+              <p role="alert" className="mt-3 text-sm text-red-600">
+                {joinError}
+              </p>
+            )}
+            {joinMessage && (
+              <p role="status" className="mt-3 text-sm text-green-700">
+                {joinMessage}
+              </p>
+            )}
+            {sharedSpacePreview && (
+              <div className="mt-4 text-gray-700">
+                <p className="font-semibold">{sharedSpacePreview.nombre}</p>
+                {sharedSpacePreview.membresiaEstado === 'ACTIVA' ? (
+                  <p>Ya pertenecés a este espacio.</p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleJoinSharedSpace}
+                    disabled={isJoinSubmitting}
+                    className="mt-2 rounded bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isJoinSubmitting ? 'Uniéndome...' : 'Unirme'}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </section>
         <button
           type="button"
