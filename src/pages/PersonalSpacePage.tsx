@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { getPersonalSpace } from '../domain/getPersonalSpace'
 import type { PersonalSpace } from '../domain/getPersonalSpace'
@@ -829,7 +830,15 @@ function PersonalSpacePage() {
           ) : (
             <ul className="mb-4 space-y-2 text-left text-gray-600">
               {sharedSpaces.map((sharedSpace) => (
-                <li key={sharedSpace.id}>{sharedSpace.nombre}</li>
+                <li key={sharedSpace.id} className="flex items-center justify-between gap-3">
+                  <span>{sharedSpace.nombre}</span>
+                  <Link
+                    to={`/spaces/${sharedSpace.id}`}
+                    className="font-semibold text-blue-600 hover:underline"
+                  >
+                    Abrir
+                  </Link>
+                </li>
               ))}
             </ul>
           )}

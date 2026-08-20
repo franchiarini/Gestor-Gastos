@@ -5,6 +5,7 @@ import CheckEmailPage from './pages/auth/CheckEmailPage'
 import EmailConfirmedPage from './pages/auth/EmailConfirmedPage'
 import RequireAuth from './auth/RequireAuth'
 import PersonalSpacePage from './pages/PersonalSpacePage'
+import SharedSpacePage from './pages/SharedSpacePage'
 
 function App() {
   return (
@@ -14,6 +15,14 @@ function App() {
         element={
           <RequireAuth>
             <PersonalSpacePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/spaces/:spaceId"
+        element={
+          <RequireAuth>
+            <SharedSpacePage />
           </RequireAuth>
         }
       />
