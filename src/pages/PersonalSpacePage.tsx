@@ -74,6 +74,8 @@ function PersonalSpacePage() {
   const archivedCategories = categories.filter(
     (category) => category.estado === 'ARCHIVADA',
   )
+  const activeSharedSpaces = sharedSpaces.filter((sharedSpace) => sharedSpace.estado === 'ACTIVO')
+  const archivedSharedSpaces = sharedSpaces.filter((sharedSpace) => sharedSpace.estado === 'ARCHIVADO')
 
   useEffect(() => {
     let isMounted = true
@@ -853,13 +855,13 @@ function PersonalSpacePage() {
           <h2 className="text-2xl font-semibold text-gray-900 mb-3">
             Espacios compartidos
           </h2>
-          {sharedSpaces.length === 0 ? (
+          {activeSharedSpaces.length === 0 ? (
             <p className="mb-4 text-gray-600">
               Todavía no pertenecés a ningún espacio compartido.
             </p>
           ) : (
             <ul className="mb-4 space-y-2 text-left text-gray-600">
-              {sharedSpaces.map((sharedSpace) => (
+              {activeSharedSpaces.map((sharedSpace) => (
                 <li key={sharedSpace.id} className="flex items-center justify-between gap-3">
                   <span>{sharedSpace.nombre}</span>
                   <Link
@@ -957,6 +959,23 @@ function PersonalSpacePage() {
               </div>
             )}
           </div>
+        </section>
+        <section className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3">Espacios archivados</h2>
+          {archivedSharedSpaces.length === 0 ? (
+            <p className="text-gray-600">No tenés espacios compartidos archivados.</p>
+          ) : (
+            <ul className="space-y-2 text-left text-gray-600">
+              {archivedSharedSpaces.map((sharedSpace) => (
+                <li key={sharedSpace.id} className="flex items-center justify-between gap-3">
+                  <span>{sharedSpace.nombre}</span>
+                  <Link to={`/spaces/${sharedSpace.id}`} className="font-semibold text-blue-600 hover:underline">
+                    Abrir
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
         <button
           type="button"

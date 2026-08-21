@@ -19,6 +19,8 @@ import { regenerateSharedSpaceCode } from '../domain/regenerateSharedSpaceCode'
 import { promoteSharedSpaceMember } from '../domain/promoteSharedSpaceMember'
 import { leaveSharedSpace } from '../domain/leaveSharedSpace'
 import { expelSharedSpaceMember } from '../domain/expelSharedSpaceMember'
+import { archiveSharedSpace } from '../domain/archiveSharedSpace'
+import { reactivateSharedSpace } from '../domain/reactivateSharedSpace'
 
 function getTodayLocalDate() {
   const today = new Date()
@@ -371,6 +373,42 @@ function SharedSpacePage() {
     }
   }
 
+  async function handleArchiveSpace() {
+    if (!spaceId || isManagementSubmitting) return
+    if (!window.confirm('¿Archivar este espacio compartido?')) return
+    setManagementError('')
+    setManagementMessage('')
+    setIsManagementSubmitting(true)
+    try {
+      await archiveSharedSpace(spaceId)
+      setContext(await getSharedSpaceContext(spaceId))
+      cancelEditingCategory()
+      cancelEditingExpense()
+      setManagementMessage('Espacio archivado correctamente.')
+    } catch (requestError: unknown) {
+      setManagementError(requestError instanceof Error ? requestError.message : 'No se pudo archivar el espacio.')
+    } finally {
+      setIsManagementSubmitting(false)
+    }
+  }
+
+  async function handleReactivateSpace() {
+    if (!spaceId || isManagementSubmitting) return
+    if (!window.confirm('¿Reactivar este espacio compartido?')) return
+    setManagementError('')
+    setManagementMessage('')
+    setIsManagementSubmitting(true)
+    try {
+      await reactivateSharedSpace(spaceId)
+      setContext(await getSharedSpaceContext(spaceId))
+      setManagementMessage('Espacio reactivado correctamente.')
+    } catch (requestError: unknown) {
+      setManagementError(requestError instanceof Error ? requestError.message : 'No se pudo reactivar el espacio.')
+    } finally {
+      setIsManagementSubmitting(false)
+    }
+  }
+
   if (isLoading) {
     return <p>Cargando espacio compartido...</p>
   }
@@ -394,6 +432,7 @@ function SharedSpacePage() {
   const archivedCategories = context.categorias.filter(
     (category) => category.estado === 'ARCHIVADA',
   )
+  const isArchived = context.estado === 'ARCHIVADO'
 
   return (
     <main className="min-h-screen bg-white px-6 py-8">
@@ -402,10 +441,26 @@ function SharedSpacePage() {
         <p className="mb-8 text-gray-600">
           Rol: {context.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
         </p>
+        {isArchived && (
+          <div className="mb-8">
+            <p className="font-semibold text-gray-900">Espacio archivado</p>
+            <p className="text-gray-600">Modo sólo lectura</p>
+          </div>
+        )}
+        {management?.rol === 'ADMIN' && (
+          <button
+            type="button"
+            onClick={isArchived ? handleReactivateSpace : handleArchiveSpace}
+            disabled={isManagementSubmitting}
+            className="mb-8 rounded bg-blue-600 px-3 py-2 font-semibold text-white disabled:opacity-60"
+          >
+            {isArchived ? 'Reactivar espacio' : 'Archivar espacio'}
+          </button>
+        )}
 
         {management && (
           <>
-            <section className="mb-8">
+            {!isArchived && <section className="mb-8">
               <h2 className="mb-3 text-2xl font-semibold text-gray-900">Código de acceso</h2>
               <p className="mb-3 font-mono text-xl text-gray-800">
                 {management.codigoAcceso.slice(0, 4)}-{management.codigoAcceso.slice(4)}
@@ -420,7 +475,7 @@ function SharedSpacePage() {
                   </button>
                 )}
               </div>
-            </section>
+            </section>}
 
             <section className="mb-8">
               <h2 className="mb-3 text-2xl font-semibold text-gray-900">Integrantes</h2>
@@ -431,12 +486,12 @@ function SharedSpacePage() {
                       {member.nombre} · {member.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
                     </span>
                     <span className="flex gap-3">
-                      {management.rol === 'ADMIN' && member.rol === 'INTEGRANTE' && (
+                      {!isArchived && management.rol === 'ADMIN' && member.rol === 'INTEGRANTE' && (
                         <button type="button" onClick={() => handlePromoteMember(member)} disabled={isManagementSubmitting} className="font-semibold text-blue-600 disabled:opacity-60">
                           Promover a administrador
                         </button>
                       )}
-                      {management.rol === 'ADMIN' && member.membresiaId !== management.membresiaId && (
+                      {!isArchived && management.rol === 'ADMIN' && member.membresiaId !== management.membresiaId && (
                         <button type="button" onClick={() => handleExpelMember(member)} disabled={isManagementSubmitting} className="font-semibold text-red-600 disabled:opacity-60">
                           Expulsar
                         </button>
@@ -454,10 +509,10 @@ function SharedSpacePage() {
 
         <section className="mb-8">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Categorías</h2>
-          <form onSubmit={handleCreateCategory} className="mb-4 flex gap-2">
+          {!isArchived && <form onSubmit={handleCreateCategory} className="mb-4 flex gap-2">
             <input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="Nombre de categoría" required disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
             <button type="submit" disabled={isCategorySubmitting} className="rounded bg-blue-600 px-3 py-2 font-semibold text-white disabled:opacity-60">{isCategorySubmitting ? 'Guardando...' : 'Agregar categoría'}</button>
-          </form>
+          </form>}
           {categoryError && <p role="alert" className="mb-3 text-sm text-red-600">{categoryError}</p>}
           {activeCategories.length === 0 ? (
             <p className="text-gray-600">No hay categorías activas.</p>
@@ -465,7 +520,7 @@ function SharedSpacePage() {
             <ul className="space-y-3 text-gray-600">
               {activeCategories.map((category) => (
                 <li key={category.id} className="flex items-center justify-between gap-3">
-                  {editingCategoryId === category.id ? (
+                  {!isArchived && editingCategoryId === category.id ? (
                     <>
                       <input value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
                       <button type="button" onClick={() => handleRenameCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Guardar</button>
@@ -474,11 +529,11 @@ function SharedSpacePage() {
                   ) : (
                     <>
                       <span>{category.nombre}</span>
-                      <span className="flex gap-3">
+                      {!isArchived && <span className="flex gap-3">
                         <button type="button" onClick={() => startEditingCategory(category)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Editar</button>
                         <button type="button" onClick={() => handleArchiveCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-red-600">Archivar</button>
                         <button type="button" onClick={() => handleDeleteCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-red-600">Eliminar</button>
-                      </span>
+                      </span>}
                     </>
                   )}
                 </li>
@@ -495,7 +550,7 @@ function SharedSpacePage() {
             <ul className="space-y-2 text-gray-600">
               {archivedCategories.map((category) => (
                 <li key={category.id} className="flex items-center justify-between gap-3">
-                  {editingCategoryId === category.id ? (
+                  {!isArchived && editingCategoryId === category.id ? (
                     <>
                       <input value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
                       <button type="button" onClick={() => handleRenameCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Guardar</button>
@@ -504,11 +559,11 @@ function SharedSpacePage() {
                   ) : (
                     <>
                       <span>{category.nombre}</span>
-                      <span className="flex gap-3">
+                      {!isArchived && <span className="flex gap-3">
                         <button type="button" onClick={() => startEditingCategory(category)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Editar</button>
                         <button type="button" onClick={() => handleRestoreCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Desarchivar</button>
                         <button type="button" onClick={() => handleDeleteCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-red-600">Eliminar</button>
-                      </span>
+                      </span>}
                     </>
                   )}
                 </li>
@@ -517,7 +572,7 @@ function SharedSpacePage() {
           </section>
         )}
 
-        <section className="mb-10">
+        {!isArchived && <section className="mb-10">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Registrar gasto</h2>
           <form onSubmit={handleCreateExpense} className="space-y-3">
             <input aria-label="Monto" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Monto" inputMode="decimal" required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
@@ -534,7 +589,7 @@ function SharedSpacePage() {
             {expenseError && <p role="alert" className="text-sm text-red-600">{expenseError}</p>}
             <button type="submit" disabled={isExpenseSubmitting || activeCategories.length === 0 || members.length === 0} className="w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-60">{isExpenseSubmitting ? 'Guardando...' : 'Registrar gasto'}</button>
           </form>
-        </section>
+        </section>}
 
         <section className="mb-10">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Gastos</h2>
@@ -542,7 +597,7 @@ function SharedSpacePage() {
             <ul className="space-y-5 text-gray-600">
               {expenses.map((expense) => (
                 <li key={expense.id} className="border-b pb-4">
-                  {editingExpenseId === expense.id ? (
+                  {!isArchived && editingExpenseId === expense.id ? (
                     <form onSubmit={handleUpdateExpense} className="space-y-3">
                       <input aria-label="Monto" value={editingAmount} onChange={(event) => setEditingAmount(event.target.value)} inputMode="decimal" required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
                       <input aria-label="Fecha" type="date" value={editingDate} onChange={(event) => setEditingDate(event.target.value)} required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
@@ -567,10 +622,10 @@ function SharedSpacePage() {
                       <p>Pagado por: {expense.pagadoPorNombre}</p>
                       <p>Registrado por: {expense.registradoPorNombre}</p>
                       {expense.descripcion && <p>{expense.descripcion}</p>}
-                      <div className="mt-2 flex gap-3">
+                      {!isArchived && <div className="mt-2 flex gap-3">
                         <button type="button" onClick={() => startEditingExpense(expense)} disabled={isExpenseSubmitting} className="font-semibold text-blue-600">Editar</button>
                         <button type="button" onClick={() => handleDeleteExpense(expense.id)} disabled={isExpenseSubmitting} className="font-semibold text-red-600">Eliminar</button>
-                      </div>
+                      </div>}
                     </>
                   )}
                 </li>
@@ -582,9 +637,11 @@ function SharedSpacePage() {
         <Link to="/" className="font-semibold text-blue-600 hover:underline">
           Volver a Mis gastos
         </Link>
-        <button type="button" onClick={handleLeaveSpace} disabled={isManagementSubmitting} className="ml-4 font-semibold text-red-600 disabled:opacity-60">
-          Abandonar espacio
-        </button>
+        {!isArchived && (
+          <button type="button" onClick={handleLeaveSpace} disabled={isManagementSubmitting} className="ml-4 font-semibold text-red-600 disabled:opacity-60">
+            Abandonar espacio
+          </button>
+        )}
       </div>
     </main>
   )

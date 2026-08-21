@@ -11,7 +11,7 @@ export async function getSharedSpaces(): Promise<SharedSpace[]> {
     .from('espacios')
     .select('id, nombre, estado')
     .eq('tipo', 'COMPARTIDO')
-    .eq('estado', 'ACTIVO')
+    .in('estado', ['ACTIVO', 'ARCHIVADO'])
     .order('nombre', { ascending: true })
     .order('id', { ascending: true })
 

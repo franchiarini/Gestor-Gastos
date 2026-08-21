@@ -11,6 +11,7 @@ export type SharedSpaceCategory = {
 export type SharedSpaceContext = {
   id: string
   nombre: string
+  estado: 'ACTIVO' | 'ARCHIVADO'
   rol: SharedSpaceRole
   categorias: SharedSpaceCategory[]
 }
@@ -60,7 +61,7 @@ export async function getSharedSpaceContext(
   if (
     !space
     || space.tipo !== 'COMPARTIDO'
-    || space.estado !== 'ACTIVO'
+    || !['ACTIVO', 'ARCHIVADO'].includes(space.estado)
     || !membership
     || membership.estado !== 'ACTIVA'
   ) {
@@ -81,6 +82,7 @@ export async function getSharedSpaceContext(
   return {
     id: space.id,
     nombre: space.nombre,
+    estado: space.estado as 'ACTIVO' | 'ARCHIVADO',
     rol: membership.rol,
     categorias: categories as SharedSpaceCategory[],
   }
