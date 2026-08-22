@@ -21,6 +21,7 @@ import { leaveSharedSpace } from '../domain/leaveSharedSpace'
 import { expelSharedSpaceMember } from '../domain/expelSharedSpaceMember'
 import { archiveSharedSpace } from '../domain/archiveSharedSpace'
 import { reactivateSharedSpace } from '../domain/reactivateSharedSpace'
+import { MonthlySummary } from '../components/MonthlySummary'
 
 function getTodayLocalDate() {
   const today = new Date()
@@ -441,6 +442,7 @@ function SharedSpacePage() {
         <p className="mb-8 text-gray-600">
           Rol: {context.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
         </p>
+        <MonthlySummary spaceId={context.id} showMembers />
         {isArchived && (
           <div className="mb-8">
             <p className="font-semibold text-gray-900">Espacio archivado</p>
