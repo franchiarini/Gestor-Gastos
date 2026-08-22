@@ -21,6 +21,7 @@ import { previewSharedSpaceByCode } from '../domain/previewSharedSpaceByCode'
 import type { SharedSpacePreview } from '../domain/previewSharedSpaceByCode'
 import { joinSharedSpaceByCode } from '../domain/joinSharedSpaceByCode'
 import { MonthlySummary } from '../components/MonthlySummary'
+import { ExpenseEvolution } from '../components/ExpenseEvolution'
 
 function getTodayLocalDate() {
   const today = new Date()
@@ -539,6 +540,7 @@ function PersonalSpacePage() {
         <h1 className="text-5xl font-bold text-gray-900 mb-4">{space.nombre}</h1>
         <p className="text-lg text-gray-600 mb-6">Este es tu espacio personal.</p>
         <MonthlySummary spaceId={space.id} showMembers={false} />
+        <ExpenseEvolution spaceId={space.id} />
         <h2 className="text-2xl font-semibold text-gray-900 mb-3">Categorías</h2>
         <form onSubmit={handleCreateCategory} className="mb-6 flex gap-2">
           <input
