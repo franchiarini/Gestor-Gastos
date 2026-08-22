@@ -4,8 +4,8 @@ function EmailConfirmedPage() {
   return (
     <main className="app-page flex items-center justify-center">
       <div className="app-panel w-full max-w-lg text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Email confirmado</h1>
-        <p className="text-lg text-gray-600 mb-6">
+        <h1 className="app-text mb-4 text-4xl font-bold">Email confirmado</h1>
+        <p className="app-muted mb-6 text-lg">
           Tu correo fue verificado correctamente.
         </p>
         <Link to="/login" className="app-button-primary">

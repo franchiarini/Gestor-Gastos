@@ -955,7 +955,7 @@ function PersonalSpacePage() {
               </p>
             )}
             {joinMessage && (
-              <p role="status" className="mt-3 text-sm text-green-700">
+              <p role="status" className="app-success mt-3 text-sm">
                 {joinMessage}
               </p>
             )}

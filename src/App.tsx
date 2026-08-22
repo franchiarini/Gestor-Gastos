@@ -6,10 +6,13 @@ import EmailConfirmedPage from './pages/auth/EmailConfirmedPage'
 import RequireAuth from './auth/RequireAuth'
 import PersonalSpacePage from './pages/PersonalSpacePage'
 import SharedSpacePage from './pages/SharedSpacePage'
+import { ThemeToggle } from './components/ThemeToggle'
 
 function App() {
   return (
-    <Routes>
+    <>
+      <ThemeToggle />
+      <Routes>
       <Route
         path="/"
         element={
@@ -35,14 +38,15 @@ function App() {
         element={
           <main className="app-page flex items-center justify-center">
             <div className="app-panel w-full max-w-lg text-center">
-              <h1 className="mb-3 text-4xl font-bold text-gray-900">Página no encontrada</h1>
-              <p className="mb-6 text-gray-600">La dirección que ingresaste no existe.</p>
+              <h1 className="app-text mb-3 text-4xl font-bold">Página no encontrada</h1>
+              <p className="app-muted mb-6">La dirección que ingresaste no existe.</p>
               <Link to="/" className="app-button-primary">Volver al inicio</Link>
             </div>
           </main>
         }
       />
-    </Routes>
+      </Routes>
+    </>
   )
 }
 

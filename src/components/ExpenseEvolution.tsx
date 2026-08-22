@@ -49,7 +49,7 @@ function EvolutionChart({ points, colorClass }: { points: EvolutionPoint[]; colo
             <span className="mb-2 max-w-full text-center text-[0.65rem] font-semibold text-gray-700 sm:text-xs" title={currencyFormatter.format(point.amount)}>
               {compactCurrencyFormatter.format(point.amount)}
             </span>
-            <div className="flex h-36 w-full items-end justify-center rounded-t-lg bg-white/70 sm:h-44">
+            <div className="flex h-36 w-full items-end justify-center rounded-t-lg bg-white/70 dark:bg-white/10 sm:h-44">
               <div className={`w-3/5 rounded-t-lg ${colorClass}`} style={{ height: `${height}%` }} />
             </div>
             <span className="mt-2 text-xs font-semibold text-gray-800">{formatMonth(point.month)}</span>
@@ -111,11 +111,11 @@ export function ExpenseEvolution({ spaceId, refreshKey }: ExpenseEvolutionProps)
       )}
       {!isLoading && !error && evolution && evolution.totals.length > 0 && (
         <div className="grid gap-5 lg:grid-cols-2">
-          <article className="min-w-0 rounded-3xl bg-sky-100 p-5 shadow-sm sm:p-6">
+          <article className="min-w-0 rounded-3xl bg-sky-100 p-5 shadow-sm dark:bg-sky-950/70 sm:p-6">
             <h3 className="mb-6 text-xl font-bold text-gray-900">Evolución mensual</h3>
-            <EvolutionChart points={evolution.totals} colorClass="bg-sky-600" />
+            <EvolutionChart points={evolution.totals} colorClass="bg-sky-600 dark:bg-sky-400" />
           </article>
-          <article className="min-w-0 rounded-3xl bg-fuchsia-100 p-5 shadow-sm sm:p-6">
+          <article className="min-w-0 rounded-3xl bg-fuchsia-100 p-5 shadow-sm dark:bg-fuchsia-950/70 sm:p-6">
             <h3 className="mb-4 text-xl font-bold text-gray-900">Evolución por categoría</h3>
             <label htmlFor={`evolution-category-${spaceId}`} className="mb-2 block text-sm font-semibold text-gray-700">Categoría</label>
             <select id={`evolution-category-${spaceId}`} value={selectedCategoryId} onChange={(event) => setSelectedCategoryId(event.target.value)} className="app-control mb-6 border-fuchsia-300">
@@ -123,8 +123,8 @@ export function ExpenseEvolution({ spaceId, refreshKey }: ExpenseEvolutionProps)
             </select>
             {selectedCategory && (
               <>
-                <p className="mb-4 break-words font-semibold text-fuchsia-900">{selectedCategory.name} · {currencyFormatter.format(selectedCategory.total)}</p>
-                <EvolutionChart points={selectedCategory.points} colorClass="bg-fuchsia-600" />
+                <p className="mb-4 break-words font-semibold text-fuchsia-900 dark:text-fuchsia-100">{selectedCategory.name} · {currencyFormatter.format(selectedCategory.total)}</p>
+                <EvolutionChart points={selectedCategory.points} colorClass="bg-fuchsia-600 dark:bg-fuchsia-400" />
               </>
             )}
           </article>

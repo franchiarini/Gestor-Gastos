@@ -455,9 +455,9 @@ function SharedSpacePage() {
         <MonthlySummary spaceId={context.id} showMembers refreshKey={analyticsRefreshKey} />
         <ExpenseEvolution spaceId={context.id} refreshKey={analyticsRefreshKey} />
         {isArchived && (
-          <div className="mb-8 rounded-2xl border border-amber-300 bg-amber-50 p-5">
-            <p className="font-bold text-amber-950">Espacio archivado</p>
-            <p className="text-amber-900">Modo sólo lectura. El historial permanece disponible.</p>
+          <div className="mb-8 rounded-2xl border border-amber-300 bg-amber-50 p-5 dark:border-amber-700 dark:bg-amber-950/60">
+            <p className="font-bold text-amber-950 dark:text-amber-100">Espacio archivado</p>
+            <p className="text-amber-900 dark:text-amber-200">Modo sólo lectura. El historial permanece disponible.</p>
           </div>
         )}
         {management?.rol === 'ADMIN' && (
@@ -483,7 +483,7 @@ function SharedSpacePage() {
                   Copiar
                 </button>
                 {management.rol === 'ADMIN' && (
-                  <button type="button" onClick={handleRegenerateAccessCode} disabled={isManagementSubmitting} className="app-button-secondary w-full border-amber-300 text-amber-900 hover:bg-amber-50 sm:w-auto">
+                  <button type="button" onClick={handleRegenerateAccessCode} disabled={isManagementSubmitting} className="app-button-secondary w-full border-amber-300 text-amber-900 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-200 dark:hover:bg-amber-950/50 sm:w-auto">
                     {isManagementSubmitting ? 'Procesando...' : 'Regenerar código'}
                   </button>
                 )}
@@ -515,8 +515,8 @@ function SharedSpacePage() {
               </ul>
             </section>
 
-            {managementError && <p role="alert" className="mb-4 text-sm text-red-600">{managementError}</p>}
-            {managementMessage && <p role="status" className="mb-4 text-sm text-green-700">{managementMessage}</p>}
+            {managementError && <p role="alert" className="app-error mb-4 text-sm">{managementError}</p>}
+            {managementMessage && <p role="status" className="app-success mb-4 text-sm">{managementMessage}</p>}
           </>
         )}
 

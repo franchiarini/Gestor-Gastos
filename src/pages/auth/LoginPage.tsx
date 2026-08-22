@@ -37,14 +37,14 @@ function LoginPage() {
   return (
     <main className="app-page flex items-center justify-center">
       <div className="app-panel w-full max-w-md">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Iniciar sesión</h1>
-        <p className="text-lg text-gray-600 mb-6">
+        <h1 className="app-text mb-4 text-4xl font-bold">Iniciar sesión</h1>
+        <p className="app-muted mb-6 text-lg">
           Accedé a tu cuenta para continuar.
         </p>
 
         <form onSubmit={handleSubmit} className="text-left space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
+            <label htmlFor="email" className="app-muted mb-1 block text-sm font-semibold">
               Email
             </label>
             <input
@@ -59,7 +59,7 @@ function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
+            <label htmlFor="password" className="app-muted mb-1 block text-sm font-semibold">
               Contraseña
             </label>
             <input
@@ -74,7 +74,7 @@ function LoginPage() {
           </div>
 
           {error && (
-            <p role="alert" className="text-sm text-red-600">
+            <p role="alert" className="app-error text-sm">
               {error}
             </p>
           )}
