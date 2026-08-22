@@ -11,23 +11,28 @@ export async function createCategory(
     throw new Error('El nombre de la categoría no puede estar vacío.')
   }
 
-  const { data, error } = await supabase
-    .from('categorias')
-    .insert({
-      espacio_id: spaceId,
-      nombre: trimmedName,
-      estado: 'ACTIVA',
-    })
-    .select('id, nombre, estado')
-    .single()
+  const { data, error } = await supabase.rpc('create_personal_category', {
+    p_espacio_id: spaceId,
+    p_nombre: trimmedName,
+  })
 
   if (error) {
     throw new Error(`No se pudo crear la categoría: ${error.message}`)
   }
 
-  if (!data) {
+  const category = (data as Array<{
+    categoria_id: string
+    categoria_nombre: string
+    categoria_estado: string
+  }> | null)?.[0]
+
+  if (!category) {
     throw new Error('No se recibió la categoría creada.')
   }
 
-  return data as SpaceCategory
+  return {
+    id: category.categoria_id,
+    nombre: category.categoria_nombre,
+    estado: category.categoria_estado,
+  } as SpaceCategory
 }
