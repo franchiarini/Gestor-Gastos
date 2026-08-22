@@ -4,15 +4,33 @@ import { Navigate } from 'react-router'
 import { useAuth } from './AuthContext'
 import { initializeUserDomain } from '../domain/initializeUserDomain'
 
+const pendingInitializations = new Map<string, Promise<void>>()
+
+function initializeUserDomainOnce(userId: string) {
+  const pendingInitialization = pendingInitializations.get(userId)
+
+  if (pendingInitialization) {
+    return pendingInitialization
+  }
+
+  const initialization = initializeUserDomain().finally(() => {
+    pendingInitializations.delete(userId)
+  })
+
+  pendingInitializations.set(userId, initialization)
+  return initialization
+}
+
 function RequireAuth({ children }: PropsWithChildren) {
   const { user, loading } = useAuth()
+  const userId = user?.id
   const [isInitializing, setIsInitializing] = useState(false)
   const [initializedUserId, setInitializedUserId] = useState<string | null>(null)
   const [initializationError, setInitializationError] = useState('')
   const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
-    if (loading || !user) {
+    if (loading || !userId) {
       setIsInitializing(false)
       setInitializedUserId(null)
       setInitializationError('')
@@ -23,10 +41,10 @@ function RequireAuth({ children }: PropsWithChildren) {
     setIsInitializing(true)
     setInitializationError('')
 
-    initializeUserDomain()
+    initializeUserDomainOnce(userId)
       .then(() => {
         if (isMounted) {
-          setInitializedUserId(user.id)
+          setInitializedUserId(userId)
         }
       })
       .catch((error: unknown) => {
@@ -47,7 +65,7 @@ function RequireAuth({ children }: PropsWithChildren) {
     return () => {
       isMounted = false
     }
-  }, [loading, retryCount, user])
+  }, [loading, retryCount, userId])
 
   if (loading) {
     return <p>Comprobando sesión...</p>
@@ -70,7 +88,7 @@ function RequireAuth({ children }: PropsWithChildren) {
 
   if (
     isInitializing ||
-    initializedUserId !== user.id
+    initializedUserId !== userId
   ) {
     return <p>Preparando tu espacio...</p>
   }
