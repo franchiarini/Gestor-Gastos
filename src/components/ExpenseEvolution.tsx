@@ -4,6 +4,7 @@ import type { EvolutionPoint, ExpenseEvolution as ExpenseEvolutionData } from '.
 
 type ExpenseEvolutionProps = {
   spaceId: string
+  refreshKey?: number
 }
 
 const currencyFormatter = new Intl.NumberFormat('es-AR', {
@@ -62,7 +63,7 @@ function EvolutionChart({ points, colorClass }: { points: EvolutionPoint[]; colo
   )
 }
 
-export function ExpenseEvolution({ spaceId }: ExpenseEvolutionProps) {
+export function ExpenseEvolution({ spaceId, refreshKey }: ExpenseEvolutionProps) {
   const [evolution, setEvolution] = useState<ExpenseEvolutionData | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -94,7 +95,7 @@ export function ExpenseEvolution({ spaceId }: ExpenseEvolutionProps) {
     return () => {
       isMounted = false
     }
-  }, [spaceId])
+  }, [spaceId, refreshKey])
 
   const selectedCategory = evolution?.categories.find(
     (category) => category.categoryId === selectedCategoryId,

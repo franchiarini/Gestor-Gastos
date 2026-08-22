@@ -6,6 +6,7 @@ import type { MonthlySummary as MonthlySummaryData } from '../domain/getMonthlyS
 type MonthlySummaryProps = {
   spaceId: string
   showMembers: boolean
+  refreshKey?: number
 }
 
 type SummaryView = 'distribution' | 'detail'
@@ -61,7 +62,7 @@ function getDonutStyle(items: Array<{ percentage: number }>): CSSProperties {
   }
 }
 
-export function MonthlySummary({ spaceId, showMembers }: MonthlySummaryProps) {
+export function MonthlySummary({ spaceId, showMembers, refreshKey }: MonthlySummaryProps) {
   const currentMonth = getCurrentMonth()
   const [month, setMonth] = useState(currentMonth)
   const [summary, setSummary] = useState<MonthlySummaryData | null>(null)
@@ -93,7 +94,7 @@ export function MonthlySummary({ spaceId, showMembers }: MonthlySummaryProps) {
     return () => {
       isMounted = false
     }
-  }, [spaceId, month])
+  }, [spaceId, month, refreshKey])
 
   return (
     <section className="mb-10 w-full text-left md:relative md:left-1/2 md:w-[min(72rem,calc(100vw-3rem))] md:-translate-x-1/2" aria-labelledby={`monthly-summary-${spaceId}`}>

@@ -60,6 +60,7 @@ function SharedSpacePage() {
   const [description, setDescription] = useState('')
   const [expenseError, setExpenseError] = useState('')
   const [isExpenseSubmitting, setIsExpenseSubmitting] = useState(false)
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0)
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null)
   const [editingAmount, setEditingAmount] = useState('')
   const [editingDate, setEditingDate] = useState('')
@@ -161,7 +162,8 @@ function SharedSpacePage() {
     setIsCategorySubmitting(true)
     try {
       await updateSharedCategory(categoryToUpdate, { nombre: editingCategoryName })
-      await refreshCategories()
+      await Promise.all([refreshCategories(), refreshExpenses()])
+      setAnalyticsRefreshKey((current) => current + 1)
       cancelEditingCategory()
     } catch (requestError: unknown) {
       setCategoryError(requestError instanceof Error ? requestError.message : 'No se pudo renombrar la categoría.')
@@ -226,6 +228,7 @@ function SharedSpacePage() {
     try {
       await createSharedExpense({ espacioId: spaceId, categoriaId: categoryId, pagadoPorMembresiaId: payerId, monto: trimmedAmount, fecha: date, descripcion: description })
       await refreshExpenses()
+      setAnalyticsRefreshKey((current) => current + 1)
       setAmount('')
       setDescription('')
       setDate(getTodayLocalDate())
@@ -268,6 +271,7 @@ function SharedSpacePage() {
     try {
       await updateSharedExpense({ gastoId: editingExpenseId, categoriaId: editingExpenseCategoryId, pagadoPorMembresiaId: editingPayerId, monto: trimmedAmount, fecha: editingDate, descripcion: editingDescription })
       await refreshExpenses()
+      setAnalyticsRefreshKey((current) => current + 1)
       cancelEditingExpense()
     } catch (requestError: unknown) {
       setExpenseError(requestError instanceof Error ? requestError.message : 'No se pudo actualizar el gasto.')
@@ -283,6 +287,7 @@ function SharedSpacePage() {
     try {
       await deleteSharedExpense(expenseToDelete)
       await refreshExpenses()
+      setAnalyticsRefreshKey((current) => current + 1)
       if (editingExpenseId === expenseToDelete) cancelEditingExpense()
     } catch (requestError: unknown) {
       setExpenseError(requestError instanceof Error ? requestError.message : 'No se pudo eliminar el gasto.')
@@ -443,8 +448,8 @@ function SharedSpacePage() {
         <p className="mb-8 text-gray-600">
           Rol: {context.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
         </p>
-        <MonthlySummary spaceId={context.id} showMembers />
-        <ExpenseEvolution spaceId={context.id} />
+        <MonthlySummary spaceId={context.id} showMembers refreshKey={analyticsRefreshKey} />
+        <ExpenseEvolution spaceId={context.id} refreshKey={analyticsRefreshKey} />
         {isArchived && (
           <div className="mb-8">
             <p className="font-semibold text-gray-900">Espacio archivado</p>

@@ -19,13 +19,21 @@ function RegisterPage() {
     }
 
     setError('')
+
+    const normalizedName = nombre.trim()
+
+    if (!normalizedName) {
+      setError('El nombre no puede estar vacío.')
+      return
+    }
+
     setIsSubmitting(true)
 
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { nombre },
+        data: { nombre: normalizedName },
         emailRedirectTo: `${window.location.origin}/auth/confirmed`,
       },
     })

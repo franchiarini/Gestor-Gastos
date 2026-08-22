@@ -56,6 +56,7 @@ function PersonalSpacePage() {
   const [expenseDescription, setExpenseDescription] = useState('')
   const [expenseError, setExpenseError] = useState('')
   const [isExpenseSubmitting, setIsExpenseSubmitting] = useState(false)
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0)
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null)
   const [editingExpenseAmount, setEditingExpenseAmount] = useState('')
   const [editingExpenseDate, setEditingExpenseDate] = useState('')
@@ -177,7 +178,7 @@ function PersonalSpacePage() {
   }
 
   async function handleRenameCategory(categoryId: string) {
-    if (isCategorySubmitting) {
+    if (!space || isCategorySubmitting) {
       return
     }
 
@@ -195,6 +196,8 @@ function PersonalSpacePage() {
           )
           .sort((first, second) => first.nombre.localeCompare(second.nombre)),
       )
+      setExpenses(await getPersonalExpenses(space.id))
+      setAnalyticsRefreshKey((current) => current + 1)
       cancelEditingCategory()
     } catch (updateError: unknown) {
       setCategoryError(
@@ -309,6 +312,7 @@ function PersonalSpacePage() {
         descripcion: expenseDescription,
       })
       setExpenses(await getPersonalExpenses(space.id))
+      setAnalyticsRefreshKey((current) => current + 1)
       setExpenseAmount('')
       setExpenseDescription('')
       setExpenseDate(getTodayLocalDate())
@@ -366,6 +370,7 @@ function PersonalSpacePage() {
         descripcion: editingExpenseDescription,
       })
       setExpenses(await getPersonalExpenses(space.id))
+      setAnalyticsRefreshKey((current) => current + 1)
       cancelEditingExpense()
     } catch (updateError: unknown) {
       setExpenseError(
@@ -391,6 +396,7 @@ function PersonalSpacePage() {
       setExpenses((currentExpenses) =>
         currentExpenses.filter((expense) => expense.id !== expenseId),
       )
+      setAnalyticsRefreshKey((current) => current + 1)
       if (editingExpenseId === expenseId) {
         cancelEditingExpense()
       }
@@ -539,8 +545,8 @@ function PersonalSpacePage() {
       <div className="text-center py-8">
         <h1 className="text-5xl font-bold text-gray-900 mb-4">{space.nombre}</h1>
         <p className="text-lg text-gray-600 mb-6">Este es tu espacio personal.</p>
-        <MonthlySummary spaceId={space.id} showMembers={false} />
-        <ExpenseEvolution spaceId={space.id} />
+        <MonthlySummary spaceId={space.id} showMembers={false} refreshKey={analyticsRefreshKey} />
+        <ExpenseEvolution spaceId={space.id} refreshKey={analyticsRefreshKey} />
         <h2 className="text-2xl font-semibold text-gray-900 mb-3">Categorías</h2>
         <form onSubmit={handleCreateCategory} className="mb-6 flex gap-2">
           <input
