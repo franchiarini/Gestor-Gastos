@@ -118,7 +118,7 @@ export function ExpenseEvolution({ spaceId, refreshKey }: ExpenseEvolutionProps)
           <article className="min-w-0 rounded-3xl bg-fuchsia-100 p-5 shadow-sm sm:p-6">
             <h3 className="mb-4 text-xl font-bold text-gray-900">Evolución por categoría</h3>
             <label htmlFor={`evolution-category-${spaceId}`} className="mb-2 block text-sm font-semibold text-gray-700">Categoría</label>
-            <select id={`evolution-category-${spaceId}`} value={selectedCategoryId} onChange={(event) => setSelectedCategoryId(event.target.value)} className="mb-6 w-full min-w-0 rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-gray-900">
+            <select id={`evolution-category-${spaceId}`} value={selectedCategoryId} onChange={(event) => setSelectedCategoryId(event.target.value)} className="app-control mb-6 border-fuchsia-300">
               {evolution.categories.map((category) => <option key={category.categoryId} value={category.categoryId}>{category.name}</option>)}
             </select>
             {selectedCategory && (

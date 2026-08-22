@@ -518,37 +518,38 @@ function PersonalSpacePage() {
   }
 
   if (isLoading) {
-    return <p>{space ? 'Cargando categorías...' : 'Cargando Mis gastos...'}</p>
+    return <main className="app-page flex items-center justify-center"><p className="text-gray-600">{space ? 'Cargando categorías...' : 'Cargando Mis gastos...'}</p></main>
   }
 
   if (error || !space) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center py-8 px-6">
+      <main className="app-page flex items-center justify-center">
+        <div className="app-panel w-full max-w-lg text-center">
           <p role="alert" className="mb-4 text-red-600">
             {error || 'No se pudo cargar tu espacio personal.'}
           </p>
           <button
             type="button"
             onClick={() => setRetryCount((count) => count + 1)}
-            className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+            className="app-button-primary"
           >
             Reintentar
           </button>
         </div>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="text-center py-8">
-        <h1 className="text-5xl font-bold text-gray-900 mb-4">{space.nombre}</h1>
+    <main className="app-page overflow-x-hidden">
+      <div className="app-container text-center">
+        <h1 className="mb-4 break-words text-4xl font-bold text-gray-900 sm:text-5xl">{space.nombre}</h1>
         <p className="text-lg text-gray-600 mb-6">Este es tu espacio personal.</p>
         <MonthlySummary spaceId={space.id} showMembers={false} refreshKey={analyticsRefreshKey} />
         <ExpenseEvolution spaceId={space.id} refreshKey={analyticsRefreshKey} />
+        <section className="app-panel mx-auto mb-6 max-w-4xl text-left">
         <h2 className="text-2xl font-semibold text-gray-900 mb-3">Categorías</h2>
-        <form onSubmit={handleCreateCategory} className="mb-6 flex gap-2">
+        <form onSubmit={handleCreateCategory} className="mb-6 flex flex-col gap-2 sm:flex-row">
           <input
             type="text"
             value={newCategoryName}
@@ -556,12 +557,12 @@ function PersonalSpacePage() {
             placeholder="Nombre de categoría"
             aria-label="Nombre de categoría"
             disabled={isCategorySubmitting}
-            className="rounded border border-gray-300 px-3 py-2 text-gray-900"
+            className="app-control"
           />
           <button
             type="submit"
             disabled={isCategorySubmitting}
-            className="rounded bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="app-button-primary w-full sm:w-auto"
           >
             {isCategorySubmitting ? 'Guardando...' : 'Agregar categoría'}
           </button>
@@ -573,7 +574,7 @@ function PersonalSpacePage() {
         )}
         <ul className="mb-8 space-y-3 text-gray-600">
           {activeCategories.map((category) => (
-            <li key={category.id} className="flex items-center justify-between gap-3">
+            <li key={category.id} className="flex flex-col items-start gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
               {editingCategoryId === category.id ? (
                 <>
                   <input
@@ -582,13 +583,13 @@ function PersonalSpacePage() {
                     onChange={(event) => setEditingCategoryName(event.target.value)}
                     aria-label={`Nuevo nombre para ${category.nombre}`}
                     disabled={isCategorySubmitting}
-                    className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
+                    className="app-control flex-1"
                   />
                   <button
                     type="button"
                     onClick={() => handleRenameCategory(category.id)}
                     disabled={isCategorySubmitting}
-                    className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
+                    className="app-action"
                   >
                     Guardar
                   </button>
@@ -596,7 +597,7 @@ function PersonalSpacePage() {
                     type="button"
                     onClick={cancelEditingCategory}
                     disabled={isCategorySubmitting}
-                    className="text-gray-600 font-semibold hover:underline disabled:opacity-60"
+                    className="app-action text-gray-700 hover:bg-slate-100"
                   >
                     Cancelar
                   </button>
@@ -604,12 +605,12 @@ function PersonalSpacePage() {
               ) : (
                 <>
                   <span>{category.nombre}</span>
-                  <span className="flex gap-3">
+                  <span className="flex flex-wrap gap-1 sm:justify-end">
                     <button
                       type="button"
                       onClick={() => startEditingCategory(category)}
                       disabled={isCategorySubmitting}
-                      className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
+                      className="app-action"
                     >
                       Editar
                     </button>
@@ -617,7 +618,7 @@ function PersonalSpacePage() {
                       type="button"
                       onClick={() => handleArchiveCategory(category.id)}
                       disabled={isCategorySubmitting}
-                      className="text-red-600 font-semibold hover:underline disabled:opacity-60"
+                      className="app-action"
                     >
                       Archivar
                     </button>
@@ -625,7 +626,7 @@ function PersonalSpacePage() {
                       type="button"
                       onClick={() => handleDeleteCategory(category.id)}
                       disabled={isCategorySubmitting}
-                      className="text-red-600 font-semibold hover:underline disabled:opacity-60"
+                      className="app-action-danger"
                     >
                       Eliminar
                     </button>
@@ -643,7 +644,7 @@ function PersonalSpacePage() {
         ) : (
           <ul className="mb-8 space-y-3 text-gray-600">
             {archivedCategories.map((category) => (
-              <li key={category.id} className="flex items-center justify-between gap-3">
+              <li key={category.id} className="flex flex-col items-start gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
                 {editingCategoryId === category.id ? (
                   <>
                     <input
@@ -652,13 +653,13 @@ function PersonalSpacePage() {
                       onChange={(event) => setEditingCategoryName(event.target.value)}
                       aria-label={`Nuevo nombre para ${category.nombre}`}
                       disabled={isCategorySubmitting}
-                      className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
+                      className="app-control flex-1"
                     />
                     <button
                       type="button"
                       onClick={() => handleRenameCategory(category.id)}
                       disabled={isCategorySubmitting}
-                      className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
+                      className="app-action"
                     >
                       Guardar
                     </button>
@@ -666,7 +667,7 @@ function PersonalSpacePage() {
                       type="button"
                       onClick={cancelEditingCategory}
                       disabled={isCategorySubmitting}
-                      className="text-gray-600 font-semibold hover:underline disabled:opacity-60"
+                      className="app-action text-gray-700 hover:bg-slate-100"
                     >
                       Cancelar
                     </button>
@@ -674,12 +675,12 @@ function PersonalSpacePage() {
                 ) : (
                   <>
                     <span>{category.nombre}</span>
-                    <span className="flex gap-3">
+                    <span className="flex flex-wrap gap-1 sm:justify-end">
                       <button
                         type="button"
                         onClick={() => startEditingCategory(category)}
                         disabled={isCategorySubmitting}
-                        className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
+                        className="app-action"
                       >
                         Editar
                       </button>
@@ -687,7 +688,7 @@ function PersonalSpacePage() {
                         type="button"
                         onClick={() => handleRestoreCategory(category.id)}
                         disabled={isCategorySubmitting}
-                        className="text-blue-600 font-semibold hover:underline disabled:opacity-60"
+                        className="app-action"
                       >
                         Desarchivar
                       </button>
@@ -695,7 +696,7 @@ function PersonalSpacePage() {
                         type="button"
                         onClick={() => handleDeleteCategory(category.id)}
                         disabled={isCategorySubmitting}
-                        className="text-red-600 font-semibold hover:underline disabled:opacity-60"
+                      className="app-action"
                       >
                         Eliminar
                       </button>
@@ -706,6 +707,8 @@ function PersonalSpacePage() {
             ))}
           </ul>
         )}
+        </section>
+        <section className="app-panel mx-auto mb-6 max-w-4xl text-left">
         <h2 className="text-2xl font-semibold text-gray-900 mb-3">Agregar gasto</h2>
         <form onSubmit={handleCreateExpense} className="mb-8 space-y-4 text-left">
           <div>
@@ -720,7 +723,7 @@ function PersonalSpacePage() {
               onChange={(event) => setExpenseAmount(event.target.value)}
               required
               disabled={isExpenseSubmitting}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+              className="app-control"
             />
           </div>
           <div>
@@ -734,7 +737,7 @@ function PersonalSpacePage() {
               onChange={(event) => setExpenseDate(event.target.value)}
               required
               disabled={isExpenseSubmitting}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+              className="app-control"
             />
           </div>
           <div>
@@ -747,7 +750,7 @@ function PersonalSpacePage() {
               onChange={(event) => setExpenseCategoryId(event.target.value)}
               required
               disabled={isExpenseSubmitting}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+              className="app-control"
             >
               <option value="">Seleccioná una categoría</option>
               {activeCategories.map((category) => (
@@ -767,7 +770,7 @@ function PersonalSpacePage() {
               value={expenseDescription}
               onChange={(event) => setExpenseDescription(event.target.value)}
               disabled={isExpenseSubmitting}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+              className="app-control"
             />
           </div>
           {expenseError && (
@@ -778,7 +781,7 @@ function PersonalSpacePage() {
           <button
             type="submit"
             disabled={isExpenseSubmitting || activeCategories.length === 0}
-            className="w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="app-button-primary w-full"
           >
             {isExpenseSubmitting ? 'Guardando gasto...' : 'Agregar gasto'}
           </button>
@@ -800,7 +803,7 @@ function PersonalSpacePage() {
                       onChange={(event) => setEditingExpenseAmount(event.target.value)}
                       required
                       disabled={isExpenseSubmitting}
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+                      className="app-control"
                     />
                     <input
                       aria-label="Fecha"
@@ -809,7 +812,7 @@ function PersonalSpacePage() {
                       onChange={(event) => setEditingExpenseDate(event.target.value)}
                       required
                       disabled={isExpenseSubmitting}
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+                      className="app-control"
                     />
                     <select
                       aria-label="Categoría"
@@ -817,7 +820,7 @@ function PersonalSpacePage() {
                       onChange={(event) => setEditingExpenseCategoryId(event.target.value)}
                       required
                       disabled={isExpenseSubmitting}
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+                      className="app-control"
                     >
                       <option value="">Seleccioná una categoría activa</option>
                       {activeCategories.map((category) => (
@@ -832,29 +835,29 @@ function PersonalSpacePage() {
                       value={editingExpenseDescription}
                       onChange={(event) => setEditingExpenseDescription(event.target.value)}
                       disabled={isExpenseSubmitting}
-                      className="w-full rounded border border-gray-300 px-3 py-2 text-gray-900"
+                      className="app-control"
                     />
-                    <div className="flex gap-3">
-                      <button type="submit" disabled={isExpenseSubmitting} className="text-blue-600 font-semibold hover:underline disabled:opacity-60">
+                    <div className="flex flex-wrap gap-1">
+                      <button type="submit" disabled={isExpenseSubmitting} className="app-action">
                         Guardar
                       </button>
-                      <button type="button" onClick={cancelEditingExpense} disabled={isExpenseSubmitting} className="text-gray-600 font-semibold hover:underline disabled:opacity-60">
+                      <button type="button" onClick={cancelEditingExpense} disabled={isExpenseSubmitting} className="app-action text-gray-700 hover:bg-slate-100">
                         Cancelar
                       </button>
                     </div>
                   </form>
                 ) : (
                   <>
-                <p className="font-semibold text-gray-900">
+                <p className="min-w-0 break-words font-semibold text-gray-900">
                   {currencyFormatter.format(Number(expense.monto))}
                 </p>
                 <p>{expense.fecha} · {expense.categoria.nombre}</p>
                 {expense.descripcion && <p>{expense.descripcion}</p>}
-                    <div className="mt-2 flex gap-3">
-                      <button type="button" onClick={() => startEditingExpense(expense)} disabled={isExpenseSubmitting} className="text-blue-600 font-semibold hover:underline disabled:opacity-60">
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      <button type="button" onClick={() => startEditingExpense(expense)} disabled={isExpenseSubmitting} className="app-action">
                         Editar
                       </button>
-                      <button type="button" onClick={() => handleDeleteExpense(expense.id)} disabled={isExpenseSubmitting} className="text-red-600 font-semibold hover:underline disabled:opacity-60">
+                      <button type="button" onClick={() => handleDeleteExpense(expense.id)} disabled={isExpenseSubmitting} className="app-action-danger">
                         Eliminar
                       </button>
                     </div>
@@ -864,7 +867,8 @@ function PersonalSpacePage() {
             ))}
           </ul>
         )}
-        <section className="mb-8">
+        </section>
+        <section className="app-panel mx-auto mb-6 max-w-4xl text-left">
           <h2 className="text-2xl font-semibold text-gray-900 mb-3">
             Espacios compartidos
           </h2>
@@ -875,11 +879,11 @@ function PersonalSpacePage() {
           ) : (
             <ul className="mb-4 space-y-2 text-left text-gray-600">
               {activeSharedSpaces.map((sharedSpace) => (
-                <li key={sharedSpace.id} className="flex items-center justify-between gap-3">
-                  <span>{sharedSpace.nombre}</span>
+                <li key={sharedSpace.id} className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="min-w-0 break-words">{sharedSpace.nombre}</span>
                   <Link
                     to={`/spaces/${sharedSpace.id}`}
-                    className="font-semibold text-blue-600 hover:underline"
+                    className="app-link"
                   >
                     Abrir
                   </Link>
@@ -887,7 +891,7 @@ function PersonalSpacePage() {
               ))}
             </ul>
           )}
-          <form onSubmit={handleCreateSharedSpace} className="flex gap-2">
+          <form onSubmit={handleCreateSharedSpace} className="flex flex-col gap-2 sm:flex-row">
             <input
               type="text"
               value={newSharedSpaceName}
@@ -896,12 +900,12 @@ function PersonalSpacePage() {
               aria-label="Nombre del espacio"
               required
               disabled={isSharedSpaceSubmitting}
-              className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
+              className="app-control flex-1"
             />
             <button
               type="submit"
               disabled={isSharedSpaceSubmitting}
-              className="rounded bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="app-button-primary w-full sm:w-auto"
             >
               {isSharedSpaceSubmitting ? 'Creando...' : 'Crear espacio'}
             </button>
@@ -921,7 +925,7 @@ function PersonalSpacePage() {
             </p>
           )}
           <div className="mt-6 border-t border-gray-200 pt-6">
-            <form onSubmit={handlePreviewSharedSpace} className="flex gap-2">
+            <form onSubmit={handlePreviewSharedSpace} className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={accessCode}
@@ -935,12 +939,12 @@ function PersonalSpacePage() {
                 aria-label="Código de acceso"
                 required
                 disabled={isJoinSubmitting}
-                className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
+                className="app-control flex-1"
               />
               <button
                 type="submit"
                 disabled={isJoinSubmitting}
-                className="rounded bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="app-button-primary w-full sm:w-auto"
               >
                 {isJoinSubmitting ? 'Buscando...' : 'Buscar'}
               </button>
@@ -965,7 +969,7 @@ function PersonalSpacePage() {
                     type="button"
                     onClick={handleJoinSharedSpace}
                     disabled={isJoinSubmitting}
-                    className="mt-2 rounded bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="app-button-primary mt-2"
                   >
                     {isJoinSubmitting ? 'Uniéndome...' : 'Unirme'}
                   </button>
@@ -974,16 +978,16 @@ function PersonalSpacePage() {
             )}
           </div>
         </section>
-        <section className="mb-8">
+        <section className="app-panel mx-auto mb-6 max-w-4xl text-left">
           <h2 className="text-2xl font-semibold text-gray-900 mb-3">Espacios archivados</h2>
           {archivedSharedSpaces.length === 0 ? (
             <p className="text-gray-600">No tenés espacios compartidos archivados.</p>
           ) : (
             <ul className="space-y-2 text-left text-gray-600">
               {archivedSharedSpaces.map((sharedSpace) => (
-                <li key={sharedSpace.id} className="flex items-center justify-between gap-3">
-                  <span>{sharedSpace.nombre}</span>
-                  <Link to={`/spaces/${sharedSpace.id}`} className="font-semibold text-blue-600 hover:underline">
+                <li key={sharedSpace.id} className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="min-w-0 break-words">{sharedSpace.nombre}</span>
+                  <Link to={`/spaces/${sharedSpace.id}`} className="app-link">
                     Abrir
                   </Link>
                 </li>
@@ -995,7 +999,7 @@ function PersonalSpacePage() {
           type="button"
           onClick={handleSignOut}
           disabled={isSigningOut}
-          className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="app-button-secondary"
         >
           {isSigningOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
         </button>
@@ -1005,7 +1009,7 @@ function PersonalSpacePage() {
           </p>
         )}
       </div>
-    </div>
+    </main>
   )
 }
 

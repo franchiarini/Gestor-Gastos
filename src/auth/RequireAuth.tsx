@@ -68,17 +68,19 @@ function RequireAuth({ children }: PropsWithChildren) {
   }, [loading, retryCount, userId])
 
   if (loading) {
-    return <p>Comprobando sesión...</p>
+    return <main className="app-page flex items-center justify-center"><p className="text-gray-600">Comprobando sesión...</p></main>
   }
 
   if (authError) {
     return (
-      <div>
-        <p role="alert">{authError}</p>
-        <button type="button" onClick={retrySessionCheck}>
-          Reintentar
-        </button>
-      </div>
+      <main className="app-page flex items-center justify-center">
+        <div className="app-panel w-full max-w-lg text-center">
+          <p role="alert" className="mb-4 text-red-700">{authError}</p>
+          <button type="button" onClick={retrySessionCheck} className="app-button-primary">
+            Reintentar
+          </button>
+        </div>
+      </main>
     )
   }
 
@@ -88,12 +90,14 @@ function RequireAuth({ children }: PropsWithChildren) {
 
   if (initializationError) {
     return (
-      <div>
-        <p role="alert">{initializationError}</p>
-        <button type="button" onClick={() => setRetryCount((count) => count + 1)}>
-          Reintentar
-        </button>
-      </div>
+      <main className="app-page flex items-center justify-center">
+        <div className="app-panel w-full max-w-lg text-center">
+          <p role="alert" className="mb-4 text-red-700">{initializationError}</p>
+          <button type="button" onClick={() => setRetryCount((count) => count + 1)} className="app-button-primary">
+            Reintentar
+          </button>
+        </div>
+      </main>
     )
   }
 
@@ -101,7 +105,7 @@ function RequireAuth({ children }: PropsWithChildren) {
     isInitializing ||
     initializedUserId !== userId
   ) {
-    return <p>Preparando tu espacio...</p>
+    return <main className="app-page flex items-center justify-center"><p className="text-gray-600">Preparando tu espacio...</p></main>
   }
 
   return children

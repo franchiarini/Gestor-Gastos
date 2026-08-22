@@ -417,18 +417,20 @@ function SharedSpacePage() {
   }
 
   if (isLoading) {
-    return <p>Cargando espacio compartido...</p>
+    return <main className="app-page flex items-center justify-center"><p className="text-gray-600">Cargando espacio compartido...</p></main>
   }
 
   if (error || !context) {
     return (
-      <main className="min-h-screen bg-white px-6 py-8 text-center">
-        <p role="alert" className="mb-4 text-red-600">
+      <main className="app-page flex items-center justify-center text-center">
+        <div className="app-panel w-full max-w-lg">
+        <p role="alert" className="mb-4 text-red-700">
           {error || 'No se pudo cargar el espacio compartido.'}
         </p>
-        <Link to="/" className="font-semibold text-blue-600 hover:underline">
+        <Link to="/" className="app-button-primary">
           Volver a Mis gastos
         </Link>
+        </div>
       </main>
     )
   }
@@ -444,18 +446,18 @@ function SharedSpacePage() {
   const isOnlyActiveAdmin = management?.rol === 'ADMIN' && activeAdminCount === 1
 
   return (
-    <main className="min-h-screen bg-white px-6 py-8">
-      <div className="mx-auto max-w-2xl">
-        <h1 className="mb-2 text-4xl font-bold text-gray-900">{context.nombre}</h1>
+    <main className="app-page overflow-x-hidden">
+      <div className="app-container">
+        <h1 className="mb-2 break-words text-4xl font-bold text-gray-900 sm:text-5xl">{context.nombre}</h1>
         <p className="mb-8 text-gray-600">
           Rol: {context.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
         </p>
         <MonthlySummary spaceId={context.id} showMembers refreshKey={analyticsRefreshKey} />
         <ExpenseEvolution spaceId={context.id} refreshKey={analyticsRefreshKey} />
         {isArchived && (
-          <div className="mb-8">
-            <p className="font-semibold text-gray-900">Espacio archivado</p>
-            <p className="text-gray-600">Modo sólo lectura</p>
+          <div className="mb-8 rounded-2xl border border-amber-300 bg-amber-50 p-5">
+            <p className="font-bold text-amber-950">Espacio archivado</p>
+            <p className="text-amber-900">Modo sólo lectura. El historial permanece disponible.</p>
           </div>
         )}
         {management?.rol === 'ADMIN' && (
@@ -463,7 +465,7 @@ function SharedSpacePage() {
             type="button"
             onClick={isArchived ? handleReactivateSpace : handleArchiveSpace}
             disabled={isManagementSubmitting}
-            className="mb-8 rounded bg-blue-600 px-3 py-2 font-semibold text-white disabled:opacity-60"
+            className="app-button-secondary mb-8"
           >
             {isArchived ? 'Reactivar espacio' : 'Archivar espacio'}
           </button>
@@ -471,39 +473,39 @@ function SharedSpacePage() {
 
         {management && (
           <>
-            {!isArchived && <section className="mb-8">
+            {!isArchived && <section className="app-panel mx-auto mb-6 max-w-4xl">
               <h2 className="mb-3 text-2xl font-semibold text-gray-900">Código de acceso</h2>
               <p className="mb-3 font-mono text-xl text-gray-800">
                 {management.codigoAcceso.slice(0, 4)}-{management.codigoAcceso.slice(4)}
               </p>
-              <div className="flex gap-3">
-                <button type="button" onClick={handleCopyAccessCode} className="rounded bg-blue-600 px-3 py-2 font-semibold text-white">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button type="button" onClick={handleCopyAccessCode} className="app-button-secondary w-full sm:w-auto">
                   Copiar
                 </button>
                 {management.rol === 'ADMIN' && (
-                  <button type="button" onClick={handleRegenerateAccessCode} disabled={isManagementSubmitting} className="rounded bg-red-600 px-3 py-2 font-semibold text-white disabled:opacity-60">
+                  <button type="button" onClick={handleRegenerateAccessCode} disabled={isManagementSubmitting} className="app-button-secondary w-full border-amber-300 text-amber-900 hover:bg-amber-50 sm:w-auto">
                     {isManagementSubmitting ? 'Procesando...' : 'Regenerar código'}
                   </button>
                 )}
               </div>
             </section>}
 
-            <section className="mb-8">
+            <section className="app-panel mx-auto mb-6 max-w-4xl">
               <h2 className="mb-3 text-2xl font-semibold text-gray-900">Integrantes</h2>
               <ul className="space-y-3 text-gray-600">
                 {members.map((member) => (
-                  <li key={member.membresiaId} className="flex items-center justify-between gap-3">
-                    <span>
+                  <li key={member.membresiaId} className="flex flex-col items-start gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="min-w-0 break-words">
                       {member.nombre} · {member.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}
                     </span>
-                    <span className="flex gap-3">
+                    <span className="flex flex-wrap gap-1 sm:justify-end">
                       {!isArchived && management.rol === 'ADMIN' && member.rol === 'INTEGRANTE' && (
-                        <button type="button" onClick={() => handlePromoteMember(member)} disabled={isManagementSubmitting} className="font-semibold text-blue-600 disabled:opacity-60">
+                        <button type="button" onClick={() => handlePromoteMember(member)} disabled={isManagementSubmitting} className="app-action">
                           Promover a administrador
                         </button>
                       )}
                       {!isArchived && management.rol === 'ADMIN' && member.membresiaId !== management.membresiaId && (
-                        <button type="button" onClick={() => handleExpelMember(member)} disabled={isManagementSubmitting} className="font-semibold text-red-600 disabled:opacity-60">
+                        <button type="button" onClick={() => handleExpelMember(member)} disabled={isManagementSubmitting} className="app-action-danger">
                           Expulsar
                         </button>
                       )}
@@ -518,11 +520,11 @@ function SharedSpacePage() {
           </>
         )}
 
-        <section className="mb-8">
+        <section className="app-panel mx-auto mb-6 max-w-4xl">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Categorías</h2>
-          {!isArchived && <form onSubmit={handleCreateCategory} className="mb-4 flex gap-2">
-            <input aria-label="Nombre de categoría" value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="Nombre de categoría" required disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
-            <button type="submit" disabled={isCategorySubmitting} className="rounded bg-blue-600 px-3 py-2 font-semibold text-white disabled:opacity-60">{isCategorySubmitting ? 'Guardando...' : 'Agregar categoría'}</button>
+          {!isArchived && <form onSubmit={handleCreateCategory} className="mb-4 flex flex-col gap-2 sm:flex-row">
+            <input aria-label="Nombre de categoría" value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="Nombre de categoría" required disabled={isCategorySubmitting} className="app-control flex-1" />
+            <button type="submit" disabled={isCategorySubmitting} className="app-button-primary w-full sm:w-auto">{isCategorySubmitting ? 'Guardando...' : 'Agregar categoría'}</button>
           </form>}
           {categoryError && <p role="alert" className="mb-3 text-sm text-red-600">{categoryError}</p>}
           {activeCategories.length === 0 ? (
@@ -530,20 +532,20 @@ function SharedSpacePage() {
           ) : (
             <ul className="space-y-3 text-gray-600">
               {activeCategories.map((category) => (
-                <li key={category.id} className="flex items-center justify-between gap-3">
+                <li key={category.id} className="flex flex-col items-start gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
                   {!isArchived && editingCategoryId === category.id ? (
                     <>
-                      <input aria-label={`Nuevo nombre para ${category.nombre}`} value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
-                      <button type="button" onClick={() => handleRenameCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Guardar</button>
-                      <button type="button" onClick={cancelEditingCategory} disabled={isCategorySubmitting} className="font-semibold text-gray-600">Cancelar</button>
+                      <input aria-label={`Nuevo nombre para ${category.nombre}`} value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="app-control flex-1" />
+                      <button type="button" onClick={() => handleRenameCategory(category.id)} disabled={isCategorySubmitting} className="app-action">Guardar</button>
+                      <button type="button" onClick={cancelEditingCategory} disabled={isCategorySubmitting} className="app-action text-gray-700 hover:bg-slate-100">Cancelar</button>
                     </>
                   ) : (
                     <>
                       <span>{category.nombre}</span>
-                      {!isArchived && <span className="flex gap-3">
-                        <button type="button" onClick={() => startEditingCategory(category)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Editar</button>
-                        <button type="button" onClick={() => handleArchiveCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-red-600">Archivar</button>
-                        <button type="button" onClick={() => handleDeleteCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-red-600">Eliminar</button>
+                      {!isArchived && <span className="flex flex-wrap gap-1 sm:justify-end">
+                        <button type="button" onClick={() => startEditingCategory(category)} disabled={isCategorySubmitting} className="app-action">Editar</button>
+                        <button type="button" onClick={() => handleArchiveCategory(category.id)} disabled={isCategorySubmitting} className="app-action">Archivar</button>
+                        <button type="button" onClick={() => handleDeleteCategory(category.id)} disabled={isCategorySubmitting} className="app-action-danger">Eliminar</button>
                       </span>}
                     </>
                   )}
@@ -554,26 +556,26 @@ function SharedSpacePage() {
         </section>
 
         {archivedCategories.length > 0 && (
-          <section className="mb-8">
+          <section className="app-panel mx-auto mb-6 max-w-4xl bg-slate-50">
             <h2 className="mb-3 text-2xl font-semibold text-gray-900">
               Categorías archivadas
             </h2>
             <ul className="space-y-2 text-gray-600">
               {archivedCategories.map((category) => (
-                <li key={category.id} className="flex items-center justify-between gap-3">
+                <li key={category.id} className="flex flex-col items-start gap-2 border-b border-slate-200 pb-3 sm:flex-row sm:items-center sm:justify-between">
                   {!isArchived && editingCategoryId === category.id ? (
                     <>
-                      <input aria-label={`Nuevo nombre para ${category.nombre}`} value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
-                      <button type="button" onClick={() => handleRenameCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Guardar</button>
-                      <button type="button" onClick={cancelEditingCategory} disabled={isCategorySubmitting} className="font-semibold text-gray-600">Cancelar</button>
+                      <input aria-label={`Nuevo nombre para ${category.nombre}`} value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="app-control flex-1" />
+                      <button type="button" onClick={() => handleRenameCategory(category.id)} disabled={isCategorySubmitting} className="app-action">Guardar</button>
+                      <button type="button" onClick={cancelEditingCategory} disabled={isCategorySubmitting} className="app-action text-gray-700 hover:bg-slate-100">Cancelar</button>
                     </>
                   ) : (
                     <>
                       <span>{category.nombre}</span>
-                      {!isArchived && <span className="flex gap-3">
-                        <button type="button" onClick={() => startEditingCategory(category)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Editar</button>
-                        <button type="button" onClick={() => handleRestoreCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Desarchivar</button>
-                        <button type="button" onClick={() => handleDeleteCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-red-600">Eliminar</button>
+                      {!isArchived && <span className="flex flex-wrap gap-1 sm:justify-end">
+                        <button type="button" onClick={() => startEditingCategory(category)} disabled={isCategorySubmitting} className="app-action">Editar</button>
+                        <button type="button" onClick={() => handleRestoreCategory(category.id)} disabled={isCategorySubmitting} className="app-action">Desarchivar</button>
+                        <button type="button" onClick={() => handleDeleteCategory(category.id)} disabled={isCategorySubmitting} className="app-action-danger">Eliminar</button>
                       </span>}
                     </>
                   )}
@@ -583,59 +585,59 @@ function SharedSpacePage() {
           </section>
         )}
 
-        {!isArchived && <section className="mb-10">
+        {!isArchived && <section className="app-panel mx-auto mb-6 max-w-4xl">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Registrar gasto</h2>
           <form onSubmit={handleCreateExpense} className="space-y-3">
-            <input aria-label="Monto" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Monto" inputMode="decimal" required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
-            <input aria-label="Fecha" type="date" value={date} onChange={(event) => setDate(event.target.value)} required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
-            <select aria-label="Categoría" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2">
+            <input aria-label="Monto" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Monto" inputMode="decimal" required disabled={isExpenseSubmitting} className="app-control" />
+            <input aria-label="Fecha" type="date" value={date} onChange={(event) => setDate(event.target.value)} required disabled={isExpenseSubmitting} className="app-control" />
+            <select aria-label="Categoría" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required disabled={isExpenseSubmitting} className="app-control">
               <option value="">Seleccioná una categoría</option>
               {activeCategories.map((category) => <option key={category.id} value={category.id}>{category.nombre}</option>)}
             </select>
-            <select aria-label="Quién pagó" value={payerId} onChange={(event) => setPayerId(event.target.value)} required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2">
+            <select aria-label="Quién pagó" value={payerId} onChange={(event) => setPayerId(event.target.value)} required disabled={isExpenseSubmitting} className="app-control">
               <option value="">Seleccioná quién pagó</option>
               {members.map((member) => <option key={member.membresiaId} value={member.membresiaId}>{member.nombre}</option>)}
             </select>
-            <input aria-label="Descripción (opcional)" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Descripción (opcional)" disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
+            <input aria-label="Descripción (opcional)" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Descripción (opcional)" disabled={isExpenseSubmitting} className="app-control" />
             {expenseError && <p role="alert" className="text-sm text-red-600">{expenseError}</p>}
-            <button type="submit" disabled={isExpenseSubmitting || activeCategories.length === 0 || members.length === 0} className="w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-60">{isExpenseSubmitting ? 'Guardando...' : 'Registrar gasto'}</button>
+            <button type="submit" disabled={isExpenseSubmitting || activeCategories.length === 0 || members.length === 0} className="app-button-primary w-full">{isExpenseSubmitting ? 'Guardando...' : 'Registrar gasto'}</button>
           </form>
         </section>}
 
-        <section className="mb-10">
+        <section className={`app-panel mx-auto mb-6 max-w-4xl ${isArchived ? 'bg-slate-50' : ''}`}>
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Gastos</h2>
           {expenses.length === 0 ? <p className="text-gray-600">Todavía no hay gastos compartidos.</p> : (
             <ul className="space-y-5 text-gray-600">
               {expenses.map((expense) => (
-                <li key={expense.id} className="border-b pb-4">
+                <li key={expense.id} className="min-w-0 border-b pb-4">
                   {!isArchived && editingExpenseId === expense.id ? (
                     <form onSubmit={handleUpdateExpense} className="space-y-3">
-                      <input aria-label="Monto" value={editingAmount} onChange={(event) => setEditingAmount(event.target.value)} inputMode="decimal" required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
-                      <input aria-label="Fecha" type="date" value={editingDate} onChange={(event) => setEditingDate(event.target.value)} required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
-                      <select aria-label="Categoría" value={editingExpenseCategoryId} onChange={(event) => setEditingExpenseCategoryId(event.target.value)} required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2">
+                      <input aria-label="Monto" value={editingAmount} onChange={(event) => setEditingAmount(event.target.value)} inputMode="decimal" required disabled={isExpenseSubmitting} className="app-control" />
+                      <input aria-label="Fecha" type="date" value={editingDate} onChange={(event) => setEditingDate(event.target.value)} required disabled={isExpenseSubmitting} className="app-control" />
+                      <select aria-label="Categoría" value={editingExpenseCategoryId} onChange={(event) => setEditingExpenseCategoryId(event.target.value)} required disabled={isExpenseSubmitting} className="app-control">
                         <option value="">Seleccioná una categoría activa</option>
                         {activeCategories.map((category) => <option key={category.id} value={category.id}>{category.nombre}</option>)}
                       </select>
-                      <select aria-label="Quién pagó" value={editingPayerId} onChange={(event) => setEditingPayerId(event.target.value)} required disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2">
+                      <select aria-label="Quién pagó" value={editingPayerId} onChange={(event) => setEditingPayerId(event.target.value)} required disabled={isExpenseSubmitting} className="app-control">
                         <option value="">Seleccioná un integrante activo</option>
                         {members.map((member) => <option key={member.membresiaId} value={member.membresiaId}>{member.nombre}</option>)}
                       </select>
-                      <input aria-label="Descripción (opcional)" value={editingDescription} onChange={(event) => setEditingDescription(event.target.value)} disabled={isExpenseSubmitting} className="w-full rounded border px-3 py-2" />
-                      <div className="flex gap-3">
-                        <button type="submit" disabled={isExpenseSubmitting} className="font-semibold text-blue-600">Guardar</button>
-                        <button type="button" onClick={cancelEditingExpense} disabled={isExpenseSubmitting} className="font-semibold text-gray-600">Cancelar</button>
+                      <input aria-label="Descripción (opcional)" value={editingDescription} onChange={(event) => setEditingDescription(event.target.value)} disabled={isExpenseSubmitting} className="app-control" />
+                      <div className="flex flex-wrap gap-1">
+                        <button type="submit" disabled={isExpenseSubmitting} className="app-action">Guardar</button>
+                        <button type="button" onClick={cancelEditingExpense} disabled={isExpenseSubmitting} className="app-action text-gray-700 hover:bg-slate-100">Cancelar</button>
                       </div>
                     </form>
                   ) : (
                     <>
-                      <p className="font-semibold text-gray-900">{currencyFormatter.format(Number(expense.monto))}</p>
+                      <p className="min-w-0 break-words font-semibold text-gray-900">{currencyFormatter.format(Number(expense.monto))}</p>
                       <p>{expense.fecha} · {expense.categoriaNombre}</p>
                       <p>Pagado por: {expense.pagadoPorNombre}</p>
                       <p>Registrado por: {expense.registradoPorNombre}</p>
                       {expense.descripcion && <p>{expense.descripcion}</p>}
-                      {!isArchived && <div className="mt-2 flex gap-3">
-                        <button type="button" onClick={() => startEditingExpense(expense)} disabled={isExpenseSubmitting} className="font-semibold text-blue-600">Editar</button>
-                        <button type="button" onClick={() => handleDeleteExpense(expense.id)} disabled={isExpenseSubmitting} className="font-semibold text-red-600">Eliminar</button>
+                      {!isArchived && <div className="mt-2 flex flex-wrap gap-1">
+                        <button type="button" onClick={() => startEditingExpense(expense)} disabled={isExpenseSubmitting} className="app-action">Editar</button>
+                        <button type="button" onClick={() => handleDeleteExpense(expense.id)} disabled={isExpenseSubmitting} className="app-action-danger">Eliminar</button>
                       </div>}
                     </>
                   )}
@@ -645,12 +647,12 @@ function SharedSpacePage() {
           )}
         </section>
 
-        <Link to="/" className="font-semibold text-blue-600 hover:underline">
+        <Link to="/" className="app-link">
           Volver a Mis gastos
         </Link>
         {!isArchived && (
           <>
-            <button type="button" onClick={handleLeaveSpace} disabled={isManagementSubmitting || isOnlyActiveAdmin} className="ml-4 font-semibold text-red-600 disabled:opacity-60">
+            <button type="button" onClick={handleLeaveSpace} disabled={isManagementSubmitting || isOnlyActiveAdmin} className="app-action-danger sm:ml-2">
               Abandonar espacio
             </button>
             {isOnlyActiveAdmin && (

@@ -1,11 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --text: #333;
-  --bg: #fff;
+  --text: #111827;
+  --bg: #f8fafc;
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 
+  color-scheme: light;
   color: var(--text);
+  background: var(--bg);
   font-family: var(--sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,14 +15,67 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #e0e0e0;
-    --bg: #1a1a1a;
-  }
-}
-
 body {
   margin: 0;
   padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+button,
+a,
+input,
+select {
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgb(147 197 253);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .app-page {
+    @apply min-h-screen bg-slate-50 px-4 py-8 sm:px-6 sm:py-10;
+  }
+
+  .app-container {
+    @apply mx-auto w-full max-w-6xl;
+  }
+
+  .app-panel {
+    @apply rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6;
+  }
+
+  .app-control {
+    @apply w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-gray-900 placeholder:text-gray-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-gray-500;
+  }
+
+  .app-button-primary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .app-button-secondary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold text-gray-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .app-button-danger {
+    @apply inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .app-action {
+    @apply inline-flex min-h-10 items-center rounded-lg px-2.5 py-1.5 font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .app-action-danger {
+    @apply inline-flex min-h-10 items-center rounded-lg px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .app-link {
+    @apply inline-flex min-h-10 items-center rounded-lg px-2 py-1 font-semibold text-blue-700 hover:bg-blue-50;
+  }
 }

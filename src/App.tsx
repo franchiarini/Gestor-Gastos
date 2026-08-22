@@ -33,9 +33,12 @@ function App() {
       <Route
         path="*"
         element={
-          <main>
-            <h1>Página no encontrada</h1>
-            <Link to="/">Volver al inicio</Link>
+          <main className="app-page flex items-center justify-center">
+            <div className="app-panel w-full max-w-lg text-center">
+              <h1 className="mb-3 text-4xl font-bold text-gray-900">Página no encontrada</h1>
+              <p className="mb-6 text-gray-600">La dirección que ingresaste no existe.</p>
+              <Link to="/" className="app-button-primary">Volver al inicio</Link>
+            </div>
           </main>
         }
       />

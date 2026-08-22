@@ -122,7 +122,7 @@ export function MonthlySummary({ spaceId, showMembers, refreshKey }: MonthlySumm
           <article className="flex min-h-[25rem] min-w-[88%] snap-center flex-col items-center justify-center overflow-hidden rounded-3xl bg-blue-700 p-6 text-center text-white shadow-sm md:min-w-0">
             <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-100">Resumen general</p>
             <h3 className="mb-8 text-2xl font-bold sm:text-3xl">{formatMonth(summary.month)}</h3>
-            <p className="min-w-0 max-w-full whitespace-nowrap font-bold leading-tight [font-size:clamp(1.625rem,2.8vw,2.75rem)]">
+            <p className="min-w-0 max-w-full whitespace-nowrap font-bold leading-tight [font-size:clamp(1.4rem,7vw,2.75rem)] sm:[font-size:clamp(1.625rem,2.8vw,2.75rem)]">
               {currencyFormatter.format(summary.total)}
             </p>
             <p className="mt-6 text-lg text-blue-100">{summary.expenseCount} {summary.expenseCount === 1 ? 'gasto' : 'gastos'}</p>
@@ -207,13 +207,13 @@ export function MonthlySummary({ spaceId, showMembers, refreshKey }: MonthlySumm
               <div className="flex flex-1 flex-col justify-center">
                 <p className="mb-2 text-sm font-semibold text-amber-900">Categoría principal</p>
                 <h3 className="mb-6 break-words text-2xl font-bold sm:text-3xl">{summary.categories[0].name}</h3>
-                <p className="min-w-0 max-w-full whitespace-nowrap font-bold leading-tight [font-size:clamp(1.625rem,2.8vw,2.75rem)]">
+                <p className="min-w-0 max-w-full whitespace-nowrap font-bold leading-tight [font-size:clamp(1.4rem,7vw,2.75rem)] sm:[font-size:clamp(1.625rem,2.8vw,2.75rem)]">
                   {currencyFormatter.format(summary.categories[0].amount)}
                 </p>
                 <p className="mt-3 font-semibold text-amber-900">{summary.categories[0].percentage}% del total</p>
                 <div className="mt-8 border-t border-amber-300 pt-5">
                   <p className="mb-1 text-sm font-semibold text-amber-900">Promedio por gasto</p>
-                  <p className="min-w-0 max-w-full whitespace-nowrap font-bold leading-tight [font-size:clamp(1.375rem,2vw,2rem)]">
+                  <p className="min-w-0 max-w-full whitespace-nowrap font-bold leading-tight [font-size:clamp(1.2rem,6vw,2rem)] sm:[font-size:clamp(1.375rem,2vw,2rem)]">
                     {currencyFormatter.format(summary.total / summary.expenseCount)}
                   </p>
                 </div>
@@ -222,7 +222,7 @@ export function MonthlySummary({ spaceId, showMembers, refreshKey }: MonthlySumm
           )}
         </div>
         <div className="flex justify-center gap-2 md:hidden" aria-hidden="true">
-          {Array.from({ length: 3 }, (_, index) => <span key={index} className="h-2 w-2 rounded-full bg-gray-400" />)}
+          {Array.from({ length: 3 }, (_, index) => <span key={index} className="h-1.5 w-1.5 rounded-full bg-gray-300" />)}
         </div>
         </>
       )}
