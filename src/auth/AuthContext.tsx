@@ -7,6 +7,8 @@ type AuthContextValue = {
   session: Session | null
   user: User | null
   loading: boolean
+  authError: string
+  retrySessionCheck: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -19,32 +21,59 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authError, setAuthError] = useState('')
+  const [sessionCheckCount, setSessionCheckCount] = useState(0)
 
   useEffect(() => {
     let isMounted = true
 
     async function loadSession() {
-      const { data } = await supabase.auth.getSession()
+      setLoading(true)
+      setAuthError('')
 
-      if (!isMounted) {
-        return
+      try {
+        const { data, error } = await supabase.auth.getSession()
+
+        if (!isMounted) {
+          return
+        }
+
+        if (error) {
+          setAuthError('No se pudo comprobar tu sesión.')
+          setLoading(false)
+          return
+        }
+
+        setSession(data.session)
+        setUser(data.session?.user ?? null)
+        setLoading(false)
+      } catch {
+        if (isMounted) {
+          setAuthError('No se pudo comprobar tu sesión.')
+          setLoading(false)
+        }
       }
-
-      setSession(data.session)
-      setUser(data.session?.user ?? null)
-      setLoading(false)
     }
 
     loadSession()
 
+    return () => {
+      isMounted = false
+    }
+  }, [sessionCheckCount])
+
+  useEffect(() => {
+    let isMounted = true
+
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, nextSession) => {
-        if (!isMounted) {
+      (event, nextSession) => {
+        if (!isMounted || event === 'INITIAL_SESSION') {
           return
         }
 
         setSession(nextSession)
         setUser(nextSession?.user ?? null)
+        setAuthError('')
         setLoading(false)
       },
     )
@@ -55,8 +84,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [])
 
+  function retrySessionCheck() {
+    setSessionCheckCount((count) => count + 1)
+  }
+
   return (
-    <AuthContext.Provider value={{ session, user, loading }}>
+    <AuthContext.Provider value={{ session, user, loading, authError, retrySessionCheck }}>
       {children}
     </AuthContext.Provider>
   )

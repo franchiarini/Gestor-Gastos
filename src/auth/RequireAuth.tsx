@@ -22,7 +22,7 @@ function initializeUserDomainOnce(userId: string) {
 }
 
 function RequireAuth({ children }: PropsWithChildren) {
-  const { user, loading } = useAuth()
+  const { user, loading, authError, retrySessionCheck } = useAuth()
   const userId = user?.id
   const [isInitializing, setIsInitializing] = useState(false)
   const [initializedUserId, setInitializedUserId] = useState<string | null>(null)
@@ -69,6 +69,17 @@ function RequireAuth({ children }: PropsWithChildren) {
 
   if (loading) {
     return <p>Comprobando sesión...</p>
+  }
+
+  if (authError) {
+    return (
+      <div>
+        <p role="alert">{authError}</p>
+        <button type="button" onClick={retrySessionCheck}>
+          Reintentar
+        </button>
+      </div>
+    )
   }
 
   if (!user) {

@@ -440,6 +440,8 @@ function SharedSpacePage() {
     (category) => category.estado === 'ARCHIVADA',
   )
   const isArchived = context.estado === 'ARCHIVADO'
+  const activeAdminCount = members.filter((member) => member.rol === 'ADMIN').length
+  const isOnlyActiveAdmin = management?.rol === 'ADMIN' && activeAdminCount === 1
 
   return (
     <main className="min-h-screen bg-white px-6 py-8">
@@ -519,7 +521,7 @@ function SharedSpacePage() {
         <section className="mb-8">
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Categorías</h2>
           {!isArchived && <form onSubmit={handleCreateCategory} className="mb-4 flex gap-2">
-            <input value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="Nombre de categoría" required disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
+            <input aria-label="Nombre de categoría" value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="Nombre de categoría" required disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
             <button type="submit" disabled={isCategorySubmitting} className="rounded bg-blue-600 px-3 py-2 font-semibold text-white disabled:opacity-60">{isCategorySubmitting ? 'Guardando...' : 'Agregar categoría'}</button>
           </form>}
           {categoryError && <p role="alert" className="mb-3 text-sm text-red-600">{categoryError}</p>}
@@ -531,7 +533,7 @@ function SharedSpacePage() {
                 <li key={category.id} className="flex items-center justify-between gap-3">
                   {!isArchived && editingCategoryId === category.id ? (
                     <>
-                      <input value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
+                      <input aria-label={`Nuevo nombre para ${category.nombre}`} value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
                       <button type="button" onClick={() => handleRenameCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Guardar</button>
                       <button type="button" onClick={cancelEditingCategory} disabled={isCategorySubmitting} className="font-semibold text-gray-600">Cancelar</button>
                     </>
@@ -561,7 +563,7 @@ function SharedSpacePage() {
                 <li key={category.id} className="flex items-center justify-between gap-3">
                   {!isArchived && editingCategoryId === category.id ? (
                     <>
-                      <input value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
+                      <input aria-label={`Nuevo nombre para ${category.nombre}`} value={editingCategoryName} onChange={(event) => setEditingCategoryName(event.target.value)} disabled={isCategorySubmitting} className="min-w-0 flex-1 rounded border px-3 py-2" />
                       <button type="button" onClick={() => handleRenameCategory(category.id)} disabled={isCategorySubmitting} className="font-semibold text-blue-600">Guardar</button>
                       <button type="button" onClick={cancelEditingCategory} disabled={isCategorySubmitting} className="font-semibold text-gray-600">Cancelar</button>
                     </>
@@ -647,9 +649,16 @@ function SharedSpacePage() {
           Volver a Mis gastos
         </Link>
         {!isArchived && (
-          <button type="button" onClick={handleLeaveSpace} disabled={isManagementSubmitting} className="ml-4 font-semibold text-red-600 disabled:opacity-60">
-            Abandonar espacio
-          </button>
+          <>
+            <button type="button" onClick={handleLeaveSpace} disabled={isManagementSubmitting || isOnlyActiveAdmin} className="ml-4 font-semibold text-red-600 disabled:opacity-60">
+              Abandonar espacio
+            </button>
+            {isOnlyActiveAdmin && (
+              <p className="mt-2 text-sm text-gray-600">
+                Promové a otro integrante a ADMIN antes de abandonar el espacio.
+              </p>
+            )}
+          </>
         )}
       </div>
     </main>

@@ -554,6 +554,7 @@ function PersonalSpacePage() {
             value={newCategoryName}
             onChange={(event) => setNewCategoryName(event.target.value)}
             placeholder="Nombre de categoría"
+            aria-label="Nombre de categoría"
             disabled={isCategorySubmitting}
             className="rounded border border-gray-300 px-3 py-2 text-gray-900"
           />
@@ -579,6 +580,7 @@ function PersonalSpacePage() {
                     type="text"
                     value={editingCategoryName}
                     onChange={(event) => setEditingCategoryName(event.target.value)}
+                    aria-label={`Nuevo nombre para ${category.nombre}`}
                     disabled={isCategorySubmitting}
                     className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
                   />
@@ -648,6 +650,7 @@ function PersonalSpacePage() {
                       type="text"
                       value={editingCategoryName}
                       onChange={(event) => setEditingCategoryName(event.target.value)}
+                      aria-label={`Nuevo nombre para ${category.nombre}`}
                       disabled={isCategorySubmitting}
                       className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"
                     />
@@ -890,6 +893,7 @@ function PersonalSpacePage() {
               value={newSharedSpaceName}
               onChange={(event) => setNewSharedSpaceName(event.target.value)}
               placeholder="Nombre del espacio"
+              aria-label="Nombre del espacio"
               required
               disabled={isSharedSpaceSubmitting}
               className="min-w-0 flex-1 rounded border border-gray-300 px-3 py-2 text-gray-900"

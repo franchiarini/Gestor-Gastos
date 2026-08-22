@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router'
+import { Link, Routes, Route } from 'react-router'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import CheckEmailPage from './pages/auth/CheckEmailPage'
@@ -30,6 +30,15 @@ function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/check-email" element={<CheckEmailPage />} />
       <Route path="/auth/confirmed" element={<EmailConfirmedPage />} />
+      <Route
+        path="*"
+        element={
+          <main>
+            <h1>Página no encontrada</h1>
+            <Link to="/">Volver al inicio</Link>
+          </main>
+        }
+      />
     </Routes>
   )
 }
