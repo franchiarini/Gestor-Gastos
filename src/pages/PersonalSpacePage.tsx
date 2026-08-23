@@ -14,6 +14,8 @@ import { deletePersonalExpense } from '../domain/deletePersonalExpense'
 import { deleteCategory } from '../domain/deleteCategory'
 import { getPersonalExpenses } from '../domain/getPersonalExpenses'
 import type { PersonalExpense } from '../domain/getPersonalExpenses'
+import { appendUniqueExpenses, formatExpenseDateGroup, groupExpensesByDate } from '../domain/expensePagination'
+import type { ExpenseCursor } from '../domain/expensePagination'
 import { createSharedSpace } from '../domain/createSharedSpace'
 import { getSharedSpaces } from '../domain/getSharedSpaces'
 import type { SharedSpace } from '../domain/getSharedSpaces'
@@ -40,6 +42,10 @@ function PersonalSpacePage() {
   const [space, setSpace] = useState<PersonalSpace | null>(null)
   const [categories, setCategories] = useState<SpaceCategory[]>([])
   const [expenses, setExpenses] = useState<PersonalExpense[]>([])
+  const [expenseCursor, setExpenseCursor] = useState<ExpenseCursor | null>(null)
+  const [hasMoreExpenses, setHasMoreExpenses] = useState(false)
+  const [isLoadingMoreExpenses, setIsLoadingMoreExpenses] = useState(false)
+  const [loadMoreExpenseError, setLoadMoreExpenseError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isSigningOut, setIsSigningOut] = useState(false)
@@ -97,7 +103,9 @@ function PersonalSpacePage() {
         if (isMounted) {
           setSpace(personalSpace)
           setCategories(personalSpaceCategories)
-          setExpenses(personalSpaceExpenses)
+          setExpenses(personalSpaceExpenses.expenses)
+          setExpenseCursor(personalSpaceExpenses.nextCursor)
+          setHasMoreExpenses(personalSpaceExpenses.hasMore)
           setSharedSpaces(userSharedSpaces)
         }
       })
@@ -196,7 +204,7 @@ function PersonalSpacePage() {
           )
           .sort((first, second) => first.nombre.localeCompare(second.nombre)),
       )
-      setExpenses(await getPersonalExpenses(space.id))
+      await refreshExpenses()
       setAnalyticsRefreshKey((current) => current + 1)
       cancelEditingCategory()
     } catch (updateError: unknown) {
@@ -260,6 +268,31 @@ function PersonalSpacePage() {
     }
   }
 
+  async function refreshExpenses() {
+    if (!space) return
+    const page = await getPersonalExpenses(space.id)
+    setExpenses(page.expenses)
+    setExpenseCursor(page.nextCursor)
+    setHasMoreExpenses(page.hasMore)
+    setLoadMoreExpenseError('')
+  }
+
+  async function handleLoadMoreExpenses() {
+    if (!space || !expenseCursor || isLoadingMoreExpenses) return
+    setLoadMoreExpenseError('')
+    setIsLoadingMoreExpenses(true)
+    try {
+      const page = await getPersonalExpenses(space.id, expenseCursor)
+      setExpenses((current) => appendUniqueExpenses(current, page.expenses))
+      setExpenseCursor(page.nextCursor)
+      setHasMoreExpenses(page.hasMore)
+    } catch (loadError: unknown) {
+      setLoadMoreExpenseError(loadError instanceof Error ? loadError.message : 'No se pudieron cargar más gastos.')
+    } finally {
+      setIsLoadingMoreExpenses(false)
+    }
+  }
+
   async function handleDeleteCategory(categoryId: string) {
     if (isCategorySubmitting || !window.confirm('¿Eliminar esta categoría?')) {
       return
@@ -311,7 +344,7 @@ function PersonalSpacePage() {
         fecha: expenseDate,
         descripcion: expenseDescription,
       })
-      setExpenses(await getPersonalExpenses(space.id))
+      await refreshExpenses()
       setAnalyticsRefreshKey((current) => current + 1)
       setExpenseAmount('')
       setExpenseDescription('')
@@ -369,7 +402,7 @@ function PersonalSpacePage() {
         fecha: editingExpenseDate,
         descripcion: editingExpenseDescription,
       })
-      setExpenses(await getPersonalExpenses(space.id))
+      await refreshExpenses()
       setAnalyticsRefreshKey((current) => current + 1)
       cancelEditingExpense()
     } catch (updateError: unknown) {
@@ -393,9 +426,7 @@ function PersonalSpacePage() {
 
     try {
       await deletePersonalExpense(expenseId)
-      setExpenses((currentExpenses) =>
-        currentExpenses.filter((expense) => expense.id !== expenseId),
-      )
+      await refreshExpenses()
       setAnalyticsRefreshKey((current) => current + 1)
       if (editingExpenseId === expenseId) {
         cancelEditingExpense()
@@ -791,7 +822,13 @@ function PersonalSpacePage() {
           <p className="mb-8 text-gray-600">Todavía no registraste gastos.</p>
         ) : (
           <ul className="mb-8 space-y-4 text-left text-gray-600">
-            {expenses.map((expense) => (
+            {groupExpensesByDate(expenses).map((group) => (
+              <li key={group.fecha} className="list-none">
+                <h3 className="mb-3 border-b border-slate-200 pb-2 text-sm font-semibold uppercase tracking-wide text-gray-700 dark:border-slate-700">
+                  {formatExpenseDateGroup(group.fecha)}
+                </h3>
+                <ul className="space-y-4">
+                {group.expenses.map((expense) => (
               <li key={expense.id} className="border-b border-gray-200 pb-3">
                 {editingExpenseId === expense.id ? (
                   <form onSubmit={handleUpdateExpense} className="space-y-3">
@@ -864,8 +901,17 @@ function PersonalSpacePage() {
                   </>
                 )}
               </li>
+                ))}
+                </ul>
+              </li>
             ))}
           </ul>
+        )}
+        {loadMoreExpenseError && <p role="alert" className="mb-3 text-sm text-red-600">{loadMoreExpenseError}</p>}
+        {hasMoreExpenses && (
+          <button type="button" onClick={handleLoadMoreExpenses} disabled={isLoadingMoreExpenses} className="app-button-secondary mb-8">
+            {isLoadingMoreExpenses ? 'Cargando...' : 'Mostrar más'}
+          </button>
         )}
         </section>
         <section className="app-panel mx-auto mb-6 max-w-4xl text-left">

@@ -7,6 +7,8 @@ import { getSharedSpaceMembers } from '../domain/getSharedSpaceMembers'
 import type { SharedSpaceMember } from '../domain/getSharedSpaceMembers'
 import { getSharedExpenses } from '../domain/getSharedExpenses'
 import type { SharedExpense } from '../domain/getSharedExpenses'
+import { appendUniqueExpenses, formatExpenseDateGroup, groupExpensesByDate } from '../domain/expensePagination'
+import type { ExpenseCursor } from '../domain/expensePagination'
 import { createSharedExpense } from '../domain/createSharedExpense'
 import { updateSharedExpense } from '../domain/updateSharedExpense'
 import { deleteSharedExpense } from '../domain/deleteSharedExpense'
@@ -48,6 +50,10 @@ function SharedSpacePage() {
   const [error, setError] = useState('')
   const [members, setMembers] = useState<SharedSpaceMember[]>([])
   const [expenses, setExpenses] = useState<SharedExpense[]>([])
+  const [expenseCursor, setExpenseCursor] = useState<ExpenseCursor | null>(null)
+  const [hasMoreExpenses, setHasMoreExpenses] = useState(false)
+  const [isLoadingMoreExpenses, setIsLoadingMoreExpenses] = useState(false)
+  const [loadMoreExpenseError, setLoadMoreExpenseError] = useState('')
   const [newCategoryName, setNewCategoryName] = useState('')
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [editingCategoryName, setEditingCategoryName] = useState('')
@@ -97,7 +103,9 @@ function SharedSpacePage() {
         if (isMounted) {
           setContext(sharedSpaceContext)
           setMembers(activeMembers)
-          setExpenses(sharedExpenses)
+          setExpenses(sharedExpenses.expenses)
+          setExpenseCursor(sharedExpenses.nextCursor)
+          setHasMoreExpenses(sharedExpenses.hasMore)
           setManagement(sharedManagement)
         }
       })
@@ -126,7 +134,28 @@ function SharedSpacePage() {
   }
 
   async function refreshExpenses() {
-    if (spaceId) setExpenses(await getSharedExpenses(spaceId))
+    if (!spaceId) return
+    const page = await getSharedExpenses(spaceId)
+    setExpenses(page.expenses)
+    setExpenseCursor(page.nextCursor)
+    setHasMoreExpenses(page.hasMore)
+    setLoadMoreExpenseError('')
+  }
+
+  async function handleLoadMoreExpenses() {
+    if (!spaceId || !expenseCursor || isLoadingMoreExpenses) return
+    setLoadMoreExpenseError('')
+    setIsLoadingMoreExpenses(true)
+    try {
+      const page = await getSharedExpenses(spaceId, expenseCursor)
+      setExpenses((current) => appendUniqueExpenses(current, page.expenses))
+      setExpenseCursor(page.nextCursor)
+      setHasMoreExpenses(page.hasMore)
+    } catch (loadError: unknown) {
+      setLoadMoreExpenseError(loadError instanceof Error ? loadError.message : 'No se pudieron cargar más gastos.')
+    } finally {
+      setIsLoadingMoreExpenses(false)
+    }
   }
 
   async function handleCreateCategory(event: FormEvent<HTMLFormElement>) {
@@ -356,7 +385,9 @@ function SharedSpacePage() {
         getSharedExpenses(spaceId),
       ])
       setMembers(activeMembers)
-      setExpenses(sharedExpenses)
+      setExpenses(sharedExpenses.expenses)
+      setExpenseCursor(sharedExpenses.nextCursor)
+      setHasMoreExpenses(sharedExpenses.hasMore)
       setManagementMessage('Integrante expulsado correctamente.')
     } catch (requestError: unknown) {
       setManagementError(requestError instanceof Error ? requestError.message : 'No se pudo expulsar al integrante.')
@@ -608,7 +639,13 @@ function SharedSpacePage() {
           <h2 className="mb-3 text-2xl font-semibold text-gray-900">Gastos</h2>
           {expenses.length === 0 ? <p className="text-gray-600">Todavía no hay gastos compartidos.</p> : (
             <ul className="space-y-5 text-gray-600">
-              {expenses.map((expense) => (
+              {groupExpensesByDate(expenses).map((group) => (
+                <li key={group.fecha} className="list-none">
+                  <h3 className="mb-3 border-b border-slate-200 pb-2 text-sm font-semibold uppercase tracking-wide text-gray-700 dark:border-slate-700">
+                    {formatExpenseDateGroup(group.fecha)}
+                  </h3>
+                  <ul className="space-y-5">
+                  {group.expenses.map((expense) => (
                 <li key={expense.id} className="min-w-0 border-b pb-4">
                   {!isArchived && editingExpenseId === expense.id ? (
                     <form onSubmit={handleUpdateExpense} className="space-y-3">
@@ -642,8 +679,17 @@ function SharedSpacePage() {
                     </>
                   )}
                 </li>
+                  ))}
+                  </ul>
+                </li>
               ))}
             </ul>
+          )}
+          {loadMoreExpenseError && <p role="alert" className="mt-3 text-sm text-red-600">{loadMoreExpenseError}</p>}
+          {hasMoreExpenses && (
+            <button type="button" onClick={handleLoadMoreExpenses} disabled={isLoadingMoreExpenses} className="app-button-secondary mt-4">
+              {isLoadingMoreExpenses ? 'Cargando...' : 'Mostrar más'}
+            </button>
           )}
         </section>
 

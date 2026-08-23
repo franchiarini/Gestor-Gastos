@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabase'
+import { createExpensePage } from './expensePagination'
+import type { ExpenseCursor, ExpensePage } from './expensePagination'
 
 export type SharedExpense = {
   id: string
@@ -30,16 +32,22 @@ type ExpenseRow = {
   fecha_modificacion: string
 }
 
-export async function getSharedExpenses(spaceId: string): Promise<SharedExpense[]> {
-  const { data, error } = await supabase.rpc('get_shared_expenses', {
+export async function getSharedExpenses(
+  spaceId: string,
+  cursor: ExpenseCursor | null = null,
+): Promise<ExpensePage<SharedExpense>> {
+  const { data, error } = await supabase.rpc('get_shared_expenses_page', {
     p_espacio_id: spaceId,
+    p_cursor_fecha: cursor?.fecha ?? null,
+    p_cursor_fecha_creacion: cursor?.fechaCreacion ?? null,
+    p_cursor_id: cursor?.id ?? null,
   })
 
   if (error) {
     throw new Error(`No se pudieron cargar los gastos compartidos: ${error.message}`)
   }
 
-  return ((data ?? []) as ExpenseRow[]).map((expense) => ({
+  const expenses = ((data ?? []) as ExpenseRow[]).map((expense) => ({
     id: expense.gasto_id,
     categoriaId: expense.categoria_id,
     categoriaNombre: expense.categoria_nombre,
@@ -53,4 +61,6 @@ export async function getSharedExpenses(spaceId: string): Promise<SharedExpense[
     fechaCreacion: expense.fecha_creacion,
     fechaModificacion: expense.fecha_modificacion,
   }))
+
+  return createExpensePage(expenses)
 }

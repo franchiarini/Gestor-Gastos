@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabase'
+import { createExpensePage, EXPENSE_PAGE_SIZE } from './expensePagination'
+import type { ExpenseCursor, ExpensePage } from './expensePagination'
 
 export type PersonalExpense = {
   id: string
@@ -24,19 +26,30 @@ type ExpenseRow = {
 
 export async function getPersonalExpenses(
   spaceId: string,
-): Promise<PersonalExpense[]> {
-  const { data, error } = await supabase
+  cursor: ExpenseCursor | null = null,
+): Promise<ExpensePage<PersonalExpense>> {
+  let query = supabase
     .from('gastos')
     .select('id, categoria_id, monto, fecha, descripcion, fecha_creacion, categorias(nombre)')
     .eq('espacio_id', spaceId)
     .order('fecha', { ascending: false })
     .order('fecha_creacion', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(EXPENSE_PAGE_SIZE + 1)
+
+  if (cursor) {
+    query = query.or(
+      `fecha.lt.${cursor.fecha},and(fecha.eq.${cursor.fecha},fecha_creacion.lt.${cursor.fechaCreacion}),and(fecha.eq.${cursor.fecha},fecha_creacion.eq.${cursor.fechaCreacion},id.lt.${cursor.id})`,
+    )
+  }
+
+  const { data, error } = await query
 
   if (error) {
     throw new Error(`No se pudieron cargar los gastos: ${error.message}`)
   }
 
-  return (data as unknown as ExpenseRow[]).map((expense) => {
+  const expenses = (data as unknown as ExpenseRow[]).map((expense) => {
     const category = Array.isArray(expense.categorias)
       ? expense.categorias[0]
       : expense.categorias
@@ -51,4 +64,6 @@ export async function getPersonalExpenses(
       categoria: category ?? { nombre: 'Sin categoría' },
     }
   })
+
+  return createExpensePage(expenses)
 }
