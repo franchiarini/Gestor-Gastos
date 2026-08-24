@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router'
-import { supabase } from '../lib/supabase'
 import { getPersonalSpace } from '../domain/getPersonalSpace'
 import type { PersonalSpace } from '../domain/getPersonalSpace'
 import { getCategoriesForSpace } from '../domain/getCategoriesForSpace'
@@ -16,12 +14,6 @@ import { getPersonalExpenses } from '../domain/getPersonalExpenses'
 import type { PersonalExpense } from '../domain/getPersonalExpenses'
 import { appendUniqueExpenses, formatExpenseDateGroup, groupExpensesByDate } from '../domain/expensePagination'
 import type { ExpenseCursor } from '../domain/expensePagination'
-import { createSharedSpace } from '../domain/createSharedSpace'
-import { getSharedSpaces } from '../domain/getSharedSpaces'
-import type { SharedSpace } from '../domain/getSharedSpaces'
-import { previewSharedSpaceByCode } from '../domain/previewSharedSpaceByCode'
-import type { SharedSpacePreview } from '../domain/previewSharedSpaceByCode'
-import { joinSharedSpaceByCode } from '../domain/joinSharedSpaceByCode'
 import { MonthlySummary } from '../components/MonthlySummary'
 import { ExpenseEvolution } from '../components/ExpenseEvolution'
 
@@ -48,8 +40,6 @@ function PersonalSpacePage() {
   const [loadMoreExpenseError, setLoadMoreExpenseError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [isSigningOut, setIsSigningOut] = useState(false)
-  const [signOutError, setSignOutError] = useState('')
   const [retryCount, setRetryCount] = useState(0)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
@@ -68,23 +58,11 @@ function PersonalSpacePage() {
   const [editingExpenseDate, setEditingExpenseDate] = useState('')
   const [editingExpenseCategoryId, setEditingExpenseCategoryId] = useState('')
   const [editingExpenseDescription, setEditingExpenseDescription] = useState('')
-  const [sharedSpaces, setSharedSpaces] = useState<SharedSpace[]>([])
-  const [newSharedSpaceName, setNewSharedSpaceName] = useState('')
-  const [createdAccessCode, setCreatedAccessCode] = useState('')
-  const [sharedSpaceError, setSharedSpaceError] = useState('')
-  const [isSharedSpaceSubmitting, setIsSharedSpaceSubmitting] = useState(false)
-  const [accessCode, setAccessCode] = useState('')
-  const [sharedSpacePreview, setSharedSpacePreview] = useState<SharedSpacePreview | null>(null)
-  const [joinError, setJoinError] = useState('')
-  const [joinMessage, setJoinMessage] = useState('')
-  const [isJoinSubmitting, setIsJoinSubmitting] = useState(false)
 
   const activeCategories = categories.filter((category) => category.estado === 'ACTIVA')
   const archivedCategories = categories.filter(
     (category) => category.estado === 'ARCHIVADA',
   )
-  const activeSharedSpaces = sharedSpaces.filter((sharedSpace) => sharedSpace.estado === 'ACTIVO')
-  const archivedSharedSpaces = sharedSpaces.filter((sharedSpace) => sharedSpace.estado === 'ARCHIVADO')
 
   useEffect(() => {
     let isMounted = true
@@ -94,10 +72,9 @@ function PersonalSpacePage() {
 
     getPersonalSpace()
       .then(async (personalSpace) => {
-        const [personalSpaceCategories, personalSpaceExpenses, userSharedSpaces] = await Promise.all([
+        const [personalSpaceCategories, personalSpaceExpenses] = await Promise.all([
           getCategoriesForSpace(personalSpace.id),
           getPersonalExpenses(personalSpace.id),
-          getSharedSpaces(),
         ])
 
         if (isMounted) {
@@ -106,7 +83,6 @@ function PersonalSpacePage() {
           setExpenses(personalSpaceExpenses.expenses)
           setExpenseCursor(personalSpaceExpenses.nextCursor)
           setHasMoreExpenses(personalSpaceExpenses.hasMore)
-          setSharedSpaces(userSharedSpaces)
         }
       })
       .catch((loadError: unknown) => {
@@ -128,22 +104,6 @@ function PersonalSpacePage() {
       isMounted = false
     }
   }, [retryCount])
-
-  async function handleSignOut() {
-    if (isSigningOut) {
-      return
-    }
-
-    setSignOutError('')
-    setIsSigningOut(true)
-
-    const { error: logoutError } = await supabase.auth.signOut()
-
-    if (logoutError) {
-      setSignOutError(logoutError.message)
-      setIsSigningOut(false)
-    }
-  }
 
   async function handleCreateCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -439,112 +399,6 @@ function PersonalSpacePage() {
       )
     } finally {
       setIsExpenseSubmitting(false)
-    }
-  }
-
-  async function handleCreateSharedSpace(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (isSharedSpaceSubmitting) {
-      return
-    }
-
-    const trimmedName = newSharedSpaceName.trim()
-
-    if (!trimmedName) {
-      setSharedSpaceError('El nombre del espacio no puede estar vacío.')
-      return
-    }
-
-    setSharedSpaceError('')
-    setCreatedAccessCode('')
-    setIsSharedSpaceSubmitting(true)
-
-    try {
-      const createdSpace = await createSharedSpace(trimmedName)
-      setSharedSpaces((currentSpaces) =>
-        [
-          ...currentSpaces,
-          {
-            id: createdSpace.id,
-            nombre: createdSpace.nombre,
-            estado: 'ACTIVO',
-          },
-        ].sort((first, second) =>
-          first.nombre.localeCompare(second.nombre) || first.id.localeCompare(second.id),
-        ),
-      )
-      setCreatedAccessCode(createdSpace.codigoAcceso)
-      setNewSharedSpaceName('')
-    } catch (createError: unknown) {
-      setSharedSpaceError(
-        createError instanceof Error
-          ? createError.message
-          : 'No se pudo crear el espacio compartido.',
-      )
-    } finally {
-      setIsSharedSpaceSubmitting(false)
-    }
-  }
-
-  async function handlePreviewSharedSpace(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (isJoinSubmitting) {
-      return
-    }
-
-    setJoinError('')
-    setJoinMessage('')
-    setSharedSpacePreview(null)
-    setIsJoinSubmitting(true)
-
-    try {
-      setSharedSpacePreview(await previewSharedSpaceByCode(accessCode))
-    } catch (previewError: unknown) {
-      setJoinError(
-        previewError instanceof Error
-          ? previewError.message
-          : 'No se pudo buscar el espacio compartido.',
-      )
-    } finally {
-      setIsJoinSubmitting(false)
-    }
-  }
-
-  async function handleJoinSharedSpace() {
-    if (!sharedSpacePreview || isJoinSubmitting) {
-      return
-    }
-
-    setJoinError('')
-    setJoinMessage('')
-    setIsJoinSubmitting(true)
-
-    try {
-      const result = await joinSharedSpaceByCode(accessCode)
-      setSharedSpaces(await getSharedSpaces())
-
-      if (result.resultado === 'ALREADY_MEMBER') {
-        setJoinMessage('Ya pertenecés a este espacio.')
-      } else {
-        setJoinMessage(
-          result.resultado === 'REACTIVATED'
-            ? 'Tu membresía fue reactivada correctamente.'
-            : 'Te uniste al espacio correctamente.',
-        )
-      }
-
-      setAccessCode('')
-      setSharedSpacePreview(null)
-    } catch (joinRequestError: unknown) {
-      setJoinError(
-        joinRequestError instanceof Error
-          ? joinRequestError.message
-          : 'No se pudo completar la unión al espacio.',
-      )
-    } finally {
-      setIsJoinSubmitting(false)
     }
   }
 
@@ -914,146 +768,6 @@ function PersonalSpacePage() {
           </button>
         )}
         </section>
-        <section className="app-panel mx-auto mb-6 max-w-4xl text-left">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-3">
-            Espacios compartidos
-          </h2>
-          {activeSharedSpaces.length === 0 ? (
-            <p className="mb-4 text-gray-600">
-              Todavía no pertenecés a ningún espacio compartido.
-            </p>
-          ) : (
-            <ul className="mb-4 space-y-2 text-left text-gray-600">
-              {activeSharedSpaces.map((sharedSpace) => (
-                <li key={sharedSpace.id} className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="min-w-0 break-words">{sharedSpace.nombre}</span>
-                  <Link
-                    to={`/spaces/${sharedSpace.id}`}
-                    className="app-link"
-                  >
-                    Abrir
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-          <form onSubmit={handleCreateSharedSpace} className="flex flex-col gap-2 sm:flex-row">
-            <input
-              type="text"
-              value={newSharedSpaceName}
-              onChange={(event) => setNewSharedSpaceName(event.target.value)}
-              placeholder="Nombre del espacio"
-              aria-label="Nombre del espacio"
-              required
-              disabled={isSharedSpaceSubmitting}
-              className="app-control flex-1"
-            />
-            <button
-              type="submit"
-              disabled={isSharedSpaceSubmitting}
-              className="app-button-primary w-full sm:w-auto"
-            >
-              {isSharedSpaceSubmitting ? 'Creando...' : 'Crear espacio'}
-            </button>
-          </form>
-          {sharedSpaceError && (
-            <p role="alert" className="mt-3 text-sm text-red-600">
-              {sharedSpaceError}
-            </p>
-          )}
-          {createdAccessCode && (
-            <p className="mt-3 text-gray-700">
-              Código de acceso:{' '}
-              <span className="font-semibold">
-                {createdAccessCode.slice(0, 4)}-{createdAccessCode.slice(4)}
-              </span>
-              . Podés compartirlo con otras personas.
-            </p>
-          )}
-          <div className="mt-6 border-t border-gray-200 pt-6">
-            <form onSubmit={handlePreviewSharedSpace} className="flex flex-col gap-2 sm:flex-row">
-              <input
-                type="text"
-                value={accessCode}
-                onChange={(event) => {
-                  setAccessCode(event.target.value)
-                  setSharedSpacePreview(null)
-                  setJoinError('')
-                  setJoinMessage('')
-                }}
-                placeholder="Código de acceso"
-                aria-label="Código de acceso"
-                required
-                disabled={isJoinSubmitting}
-                className="app-control flex-1"
-              />
-              <button
-                type="submit"
-                disabled={isJoinSubmitting}
-                className="app-button-primary w-full sm:w-auto"
-              >
-                {isJoinSubmitting ? 'Buscando...' : 'Buscar'}
-              </button>
-            </form>
-            {joinError && (
-              <p role="alert" className="mt-3 text-sm text-red-600">
-                {joinError}
-              </p>
-            )}
-            {joinMessage && (
-              <p role="status" className="app-success mt-3 text-sm">
-                {joinMessage}
-              </p>
-            )}
-            {sharedSpacePreview && (
-              <div className="mt-4 text-gray-700">
-                <p className="font-semibold">{sharedSpacePreview.nombre}</p>
-                {sharedSpacePreview.membresiaEstado === 'ACTIVA' ? (
-                  <p>Ya pertenecés a este espacio.</p>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleJoinSharedSpace}
-                    disabled={isJoinSubmitting}
-                    className="app-button-primary mt-2"
-                  >
-                    {isJoinSubmitting ? 'Uniéndome...' : 'Unirme'}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </section>
-        <section className="app-panel mx-auto mb-6 max-w-4xl text-left">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-3">Espacios archivados</h2>
-          {archivedSharedSpaces.length === 0 ? (
-            <p className="text-gray-600">No tenés espacios compartidos archivados.</p>
-          ) : (
-            <ul className="space-y-2 text-left text-gray-600">
-              {archivedSharedSpaces.map((sharedSpace) => (
-                <li key={sharedSpace.id} className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="min-w-0 break-words">{sharedSpace.nombre}</span>
-                  <Link to={`/spaces/${sharedSpace.id}`} className="app-link">
-                    Abrir
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          disabled={isSigningOut}
-          className="app-button-secondary"
-        >
-          {isSigningOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
-        </button>
-        {signOutError && (
-          <p role="alert" className="mt-4 text-sm text-red-600">
-            {signOutError}
-          </p>
-        )}
       </div>
     </main>
   )
