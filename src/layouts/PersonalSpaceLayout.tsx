@@ -28,7 +28,7 @@ export function PersonalSpaceLayout() {
     return () => { isMounted = false }
   }, [retryCount])
 
-  if (isLoading) return <main className="app-page flex items-center justify-center"><p className="app-muted">Cargando Mis gastos...</p></main>
+  if (isLoading) return <main className="app-page flex items-center justify-center"><p className="app-muted">Cargando espacio personal...</p></main>
 
   if (error || !space) {
     return <main className="app-page flex items-center justify-center"><div className="app-panel w-full max-w-lg text-center"><p role="alert" className="app-error mb-4">{error || 'No se pudo cargar tu espacio personal.'}</p><button type="button" onClick={() => setRetryCount((count) => count + 1)} className="app-button-primary">Reintentar</button></div></main>
@@ -38,7 +38,7 @@ export function PersonalSpaceLayout() {
     <main className="app-page overflow-x-hidden">
       <div className="app-container">
         <header className="mb-8 text-center">
-          <h1 className="mb-2 break-words text-4xl font-bold text-gray-900 sm:text-5xl">Mis gastos</h1>
+          <h1 className="mb-2 break-words text-4xl font-bold text-gray-900 sm:text-5xl">Espacio personal</h1>
           <p className="text-gray-600">{space.nombre}</p>
         </header>
         <Outlet context={{ spaceId: space.id, nombre: space.nombre, estado: space.estado } satisfies PersonalSpaceLayoutContext} />

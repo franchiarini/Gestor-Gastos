@@ -101,9 +101,12 @@ export default function HomePage() {
         <section className="mb-8 grid gap-4 md:grid-cols-2" aria-label="Accesos principales">
           <article className="app-panel flex min-h-48 flex-col border-blue-200/80 dark:border-blue-900/70">
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Personal</p>
-            <h2 className="mb-2 text-2xl font-semibold text-gray-900">Mis gastos</h2>
-            <p className="mb-6 flex-1 text-gray-600">Registrá y consultá tus gastos, categorías y análisis personales.</p>
-            <Link to="/personal/gastos" className="app-button-primary w-full sm:w-fit">Abrir Mis gastos</Link>
+            <h2 className="mb-2 text-2xl font-semibold text-gray-900">Espacio personal</h2>
+            <p className="mb-6 flex-1 text-gray-600">Consultá tus categorías, resumen y evolución personal.</p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Link to="/personal/resumen" className="app-button-primary w-full sm:w-fit">Abrir espacio personal</Link>
+              <Link to="/gastos" className="app-button-secondary w-full sm:w-fit">Registrar gasto</Link>
+            </div>
           </article>
           <article className="app-panel flex min-h-48 flex-col border-violet-200/80 dark:border-violet-900/70">
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">Compartidos</p>
@@ -120,8 +123,8 @@ export default function HomePage() {
           </div>
           {sharedSpaces.length === 0 ? <p className="text-gray-600">Todavía no pertenecés a ningún espacio compartido.</p> : (
             <ul className="space-y-2">
-              {activeSpaces.map((space) => <li key={space.id} className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] px-4 py-2"><span className="min-w-0 break-words font-semibold text-gray-900">{space.nombre}</span><Link to={`/spaces/${space.id}/gastos`} className="app-link min-h-10 shrink-0 px-2 py-2">Abrir</Link></li>)}
-              {archivedSpaces.map((space) => <li key={space.id} className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] bg-slate-50 px-4 py-2 opacity-80 dark:bg-slate-900"><span className="min-w-0"><span className="block break-words font-semibold text-gray-900">{space.nombre}</span><span className="text-xs text-gray-600">Archivado</span></span><Link to={`/spaces/${space.id}/gastos`} className="app-link min-h-10 shrink-0 px-2 py-2">Abrir</Link></li>)}
+              {activeSpaces.map((space) => <li key={space.id} className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] px-4 py-2"><span className="min-w-0 break-words font-semibold text-gray-900">{space.nombre}</span><Link to={`/spaces/${space.id}/resumen`} className="app-link min-h-10 shrink-0 px-2 py-2">Abrir</Link></li>)}
+              {archivedSpaces.map((space) => <li key={space.id} className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] bg-slate-50 px-4 py-2 opacity-80 dark:bg-slate-900"><span className="min-w-0"><span className="block break-words font-semibold text-gray-900">{space.nombre}</span><span className="text-xs text-gray-600">Archivado</span></span><Link to={`/spaces/${space.id}/resumen`} className="app-link min-h-10 shrink-0 px-2 py-2">Abrir</Link></li>)}
             </ul>
           )}
         </section>

@@ -38,13 +38,42 @@ export function AppNavigation({
   onSignOut,
 }: AppNavigationProps) {
   const { pathname } = useLocation()
+  const activeSpaceId = pathname.match(/^\/spaces\/([^/]+)/)?.[1] ?? null
+  const [isPersonalExpanded, setIsPersonalExpanded] = useState(() => pathname.startsWith('/personal/'))
   const [areSpacesExpanded, setAreSpacesExpanded] = useState(() => pathname.startsWith('/spaces/'))
+  const [expandedSpaceId, setExpandedSpaceId] = useState<string | null>(activeSpaceId)
   const activeSpaces = sharedSpaces.filter((space) => space.estado === 'ACTIVO')
   const archivedSpaces = sharedSpaces.filter((space) => space.estado === 'ARCHIVADO')
 
   useEffect(() => {
+    if (pathname.startsWith('/personal/')) setIsPersonalExpanded(true)
     if (pathname.startsWith('/spaces/')) setAreSpacesExpanded(true)
   }, [pathname])
+
+  useEffect(() => {
+    setExpandedSpaceId(activeSpaceId)
+  }, [activeSpaceId])
+
+  const sharedSections = [
+    ['resumen', 'Resumen'],
+    ['evolucion', 'Evolución'],
+    ['categorias', 'Categorías'],
+    ['integrantes', 'Integrantes'],
+    ['configuracion', 'Gestión'],
+  ] as const
+
+  function renderSpace(space: SharedSpace, archived = false) {
+    const isCurrent = space.id === activeSpaceId
+    const isExpanded = space.id === expandedSpaceId
+    return (
+      <li key={space.id} className={archived ? 'opacity-70' : ''}>
+        {isCurrent ? <button type="button" aria-expanded={isExpanded} aria-controls={`space-${space.id}-navigation`} onClick={() => setExpandedSpaceId((current) => current === space.id ? null : space.id)} className="flex min-h-10 w-full items-center justify-between rounded-lg bg-[var(--color-surface-muted)] px-3 py-2 text-left text-sm font-medium text-[var(--color-text)] transition hover:bg-[var(--color-border)]"><span className="min-w-0 truncate">{space.nombre}</span><span aria-hidden="true">{isExpanded ? '▾' : '›'}</span></button> : <NavLink to={`/spaces/${space.id}/resumen`} className={spaceNavigationClass}><span className="min-w-0 truncate">{space.nombre}</span></NavLink>}
+        {isExpanded && <ul id={`space-${space.id}-navigation`} className="ml-3 space-y-0.5 border-l border-[var(--color-border)] pl-2">
+          {sharedSections.map(([path, label]) => <li key={path}><NavLink to={`/spaces/${space.id}/${path}`} className={spaceNavigationClass}>{label}</NavLink></li>)}
+        </ul>}
+      </li>
+    )
+  }
 
   return (
     <aside
@@ -67,45 +96,42 @@ export function AppNavigation({
       }}>
         <ul className="space-y-1">
           <li><NavLink to="/" end className={navigationClass}>Inicio</NavLink></li>
-          <li className="pt-3">
-            <p className="mb-1 px-3 text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Mis gastos</p>
-            <ul className="space-y-1">
-              <li><NavLink to="/personal/gastos" className={navigationClass}>Gastos</NavLink></li>
-              <li><NavLink to="/personal/resumen" className={navigationClass}>Resumen</NavLink></li>
-              <li><NavLink to="/personal/evolucion" className={navigationClass}>Evolución</NavLink></li>
-              <li><NavLink to="/personal/categorias" className={navigationClass}>Categorías</NavLink></li>
+          <li><NavLink to="/gastos" className={navigationClass}>Gastos</NavLink></li>
+          <li className="pt-2">
+            <button
+              type="button"
+              aria-expanded={isPersonalExpanded}
+              aria-controls="personal-space-navigation"
+              onClick={() => setIsPersonalExpanded((expanded) => !expanded)}
+              className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2.5 text-left font-semibold text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-muted)]"
+            >
+              <span>Espacio personal</span>
+              <span aria-hidden="true">{isPersonalExpanded ? '▾' : '›'}</span>
+            </button>
+            <ul id="personal-space-navigation" hidden={!isPersonalExpanded} className="ml-3 space-y-0.5 border-l border-[var(--color-border)] pl-2">
+              <li><NavLink to="/personal/resumen" className={spaceNavigationClass}>Resumen</NavLink></li>
+              <li><NavLink to="/personal/evolucion" className={spaceNavigationClass}>Evolución</NavLink></li>
+              <li><NavLink to="/personal/categorias" className={spaceNavigationClass}>Categorías</NavLink></li>
             </ul>
           </li>
-          <li className="pt-3">
+          <li className="pt-2">
             <button
               type="button"
               aria-expanded={areSpacesExpanded}
               aria-controls="shared-spaces-navigation"
               onClick={() => setAreSpacesExpanded((expanded) => !expanded)}
-              className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2.5 text-left font-semibold text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-muted)]"
             >
               <span>Espacios</span>
               <span aria-hidden="true" className="text-base">{areSpacesExpanded ? '▾' : '›'}</span>
             </button>
             <div id="shared-spaces-navigation" hidden={!areSpacesExpanded} className="ml-3 border-l border-[var(--color-border)] pl-2">
               {activeSpaces.length === 0 && <p className="px-3 py-2 text-sm text-[var(--color-text-muted)]">Sin espacios activos</p>}
-              <ul className="space-y-0.5">
-                {activeSpaces.map((space) => (
-                  <li key={space.id}>
-                    <NavLink to={`/spaces/${space.id}/gastos`} className={spaceNavigationClass}>{space.nombre}</NavLink>
-                  </li>
-                ))}
-              </ul>
+              <ul className="space-y-1">{activeSpaces.map((space) => renderSpace(space))}</ul>
               {archivedSpaces.length > 0 && (
                 <>
                   <p className="mb-1 mt-2 px-3 text-[0.65rem] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Archivados</p>
-                  <ul className="space-y-0.5 opacity-70">
-                    {archivedSpaces.map((space) => (
-                      <li key={space.id}>
-                        <NavLink to={`/spaces/${space.id}/gastos`} className={spaceNavigationClass}>{space.nombre}</NavLink>
-                      </li>
-                    ))}
-                  </ul>
+                  <ul className="space-y-1">{archivedSpaces.map((space) => renderSpace(space, true))}</ul>
                 </>
               )}
             </div>

@@ -4,7 +4,6 @@ import RegisterPage from './pages/auth/RegisterPage'
 import CheckEmailPage from './pages/auth/CheckEmailPage'
 import EmailConfirmedPage from './pages/auth/EmailConfirmedPage'
 import RequireAuth from './auth/RequireAuth'
-import SharedSpacePage from './pages/SharedSpacePage'
 import { AppLayout } from './layouts/AppLayout'
 import HomePage from './pages/HomePage'
 import { PersonalSpaceLayout } from './layouts/PersonalSpaceLayout'
@@ -13,6 +12,12 @@ import PersonalSummaryPage from './pages/personal/PersonalSummaryPage'
 import PersonalEvolutionPage from './pages/personal/PersonalEvolutionPage'
 import PersonalCategoriesPage from './pages/personal/PersonalCategoriesPage'
 import ExpensesPage from './pages/ExpensesPage'
+import { SharedSpaceLayout } from './layouts/SharedSpaceLayout'
+import SharedSummaryPage from './pages/shared/SharedSummaryPage'
+import SharedEvolutionPage from './pages/shared/SharedEvolutionPage'
+import SharedCategoriesPage from './pages/shared/SharedCategoriesPage'
+import SharedMembersPage from './pages/shared/SharedMembersPage'
+import SharedManagementPage from './pages/shared/SharedManagementPage'
 
 function PublicLayout() {
   return <Outlet />
@@ -25,14 +30,20 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="gastos" element={<ExpensesPage />} />
         <Route path="personal" element={<PersonalSpaceLayout />}>
-          <Route index element={<Navigate to="/personal/gastos" replace />} />
+          <Route index element={<Navigate to="/personal/resumen" replace />} />
           <Route path="gastos" element={<PersonalExpensesPage />} />
           <Route path="resumen" element={<PersonalSummaryPage />} />
           <Route path="evolucion" element={<PersonalEvolutionPage />} />
           <Route path="categorias" element={<PersonalCategoriesPage />} />
         </Route>
-        <Route path="spaces/:spaceId" element={<Navigate to="gastos" replace />} />
-        <Route path="spaces/:spaceId/gastos" element={<SharedSpacePage />} />
+        <Route path="spaces/:spaceId" element={<SharedSpaceLayout />}>
+          <Route index element={<Navigate to="resumen" replace />} />
+          <Route path="resumen" element={<SharedSummaryPage />} />
+          <Route path="evolucion" element={<SharedEvolutionPage />} />
+          <Route path="categorias" element={<SharedCategoriesPage />} />
+          <Route path="integrantes" element={<SharedMembersPage />} />
+          <Route path="configuracion" element={<SharedManagementPage />} />
+        </Route>
       </Route>
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<LoginPage />} />
