@@ -12,6 +12,7 @@ import PersonalExpensesPage from './pages/personal/PersonalExpensesPage'
 import PersonalSummaryPage from './pages/personal/PersonalSummaryPage'
 import PersonalEvolutionPage from './pages/personal/PersonalEvolutionPage'
 import PersonalCategoriesPage from './pages/personal/PersonalCategoriesPage'
+import ExpensesPage from './pages/ExpensesPage'
 
 function PublicLayout() {
   return <Outlet />
@@ -22,6 +23,7 @@ function App() {
     <Routes>
       <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
         <Route index element={<HomePage />} />
+        <Route path="gastos" element={<ExpensesPage />} />
         <Route path="personal" element={<PersonalSpaceLayout />}>
           <Route index element={<Navigate to="/personal/gastos" replace />} />
           <Route path="gastos" element={<PersonalExpensesPage />} />
