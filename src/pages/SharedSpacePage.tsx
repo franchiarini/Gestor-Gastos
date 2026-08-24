@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router'
 import { getSharedSpaceContext } from '../domain/getSharedSpaceContext'
 import type { SharedSpaceContext } from '../domain/getSharedSpaceContext'
 import { getSharedSpaceMembers } from '../domain/getSharedSpaceMembers'
@@ -25,6 +25,8 @@ import { archiveSharedSpace } from '../domain/archiveSharedSpace'
 import { reactivateSharedSpace } from '../domain/reactivateSharedSpace'
 import { MonthlySummary } from '../components/MonthlySummary'
 import { ExpenseEvolution } from '../components/ExpenseEvolution'
+import { deleteSharedSpace } from '../domain/deleteSharedSpace'
+import type { AppLayoutContext } from '../layouts/AppLayout'
 
 function getTodayLocalDate() {
   const today = new Date()
@@ -45,6 +47,7 @@ function isValidAmount(amount: string) {
 function SharedSpacePage() {
   const { spaceId } = useParams<{ spaceId: string }>()
   const navigate = useNavigate()
+  const { refreshSharedSpaces } = useOutletContext<AppLayoutContext>()
   const [context, setContext] = useState<SharedSpaceContext | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -77,6 +80,7 @@ function SharedSpacePage() {
   const [managementError, setManagementError] = useState('')
   const [managementMessage, setManagementMessage] = useState('')
   const [isManagementSubmitting, setIsManagementSubmitting] = useState(false)
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -447,6 +451,23 @@ function SharedSpacePage() {
     }
   }
 
+  async function handleDeleteSpace() {
+    if (!spaceId || isManagementSubmitting) return
+    setManagementError('')
+    setManagementMessage('')
+    setIsManagementSubmitting(true)
+    try {
+      await deleteSharedSpace(spaceId)
+      setIsDeleteConfirmationOpen(false)
+      await refreshSharedSpaces()
+      navigate('/')
+    } catch (requestError: unknown) {
+      setManagementError(requestError instanceof Error ? requestError.message : 'No se pudo eliminar el espacio.')
+    } finally {
+      setIsManagementSubmitting(false)
+    }
+  }
+
   if (isLoading) {
     return <main className="app-page flex items-center justify-center"><p className="text-gray-600">Cargando espacio compartido...</p></main>
   }
@@ -545,6 +566,34 @@ function SharedSpacePage() {
                 ))}
               </ul>
             </section>
+
+            {management.rol === 'ADMIN' && (
+              <section className="app-panel mx-auto mb-6 max-w-4xl border-red-300 bg-red-50/60 dark:border-red-900 dark:bg-red-950/25">
+                <h2 className="mb-2 text-2xl font-semibold text-red-800 dark:text-red-200">Zona de peligro</h2>
+                <p className="mb-4 text-sm text-red-700 dark:text-red-300">
+                  Se eliminarán permanentemente todos los gastos, categorías, integrantes e historial asociados a este espacio.
+                </p>
+                <p className="mb-4 text-sm text-gray-700">Si querés conservar la información, podés archivarlo en su lugar.</p>
+                {!isDeleteConfirmationOpen ? (
+                  <button type="button" onClick={() => { setManagementError(''); setIsDeleteConfirmationOpen(true) }} disabled={isManagementSubmitting} className="app-action-danger">
+                    Eliminar espacio
+                  </button>
+                ) : (
+                  <div className="rounded-xl border border-red-300 bg-white p-4 dark:border-red-800 dark:bg-slate-950">
+                    <p className="font-semibold text-red-800 dark:text-red-200">¿Eliminar este espacio definitivamente?</p>
+                    <p className="mt-2 text-sm text-gray-700">
+                      Se eliminarán permanentemente todos los gastos, categorías, integrantes e historial asociados. Esta acción no se puede deshacer.
+                    </p>
+                    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                      <button type="button" onClick={() => setIsDeleteConfirmationOpen(false)} disabled={isManagementSubmitting} className="app-button-secondary">Cancelar</button>
+                      <button type="button" onClick={handleDeleteSpace} disabled={isManagementSubmitting} className="app-action-danger">
+                        {isManagementSubmitting ? 'Eliminando...' : 'Eliminar definitivamente'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
 
             {managementError && <p role="alert" className="app-error mb-4 text-sm">{managementError}</p>}
             {managementMessage && <p role="status" className="app-success mb-4 text-sm">{managementMessage}</p>}
