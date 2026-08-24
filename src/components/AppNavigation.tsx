@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router'
 import type { SharedSpace } from '../domain/getSharedSpaces'
 import { ThemeToggle } from './ThemeToggle'
+import { BrandMark } from './BrandMark'
 
 type AppNavigationProps = {
   isOpen: boolean
@@ -52,7 +53,10 @@ export function AppNavigation({
       className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] shadow-xl transition-transform duration-200 lg:translate-x-0 lg:shadow-none ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
       <div className="flex min-h-16 items-center justify-between border-b border-[var(--color-border)] px-5">
-        <span className="text-lg font-bold text-[var(--color-text)]">Gestor de Gastos</span>
+        <span className="flex min-w-0 items-center gap-2.5">
+          <BrandMark />
+          <span className="truncate text-lg font-bold text-[var(--color-text)]">Gestor de Gastos</span>
+        </span>
         <button type="button" onClick={onClose} aria-label="Cerrar navegación" className="app-action min-h-11 min-w-11 lg:hidden">
           ×
         </button>
