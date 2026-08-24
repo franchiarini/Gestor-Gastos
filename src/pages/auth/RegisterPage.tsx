@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { supabase } from '../../lib/supabase'
+import { AuthBackground } from '../../components/AuthBackground'
 
 function RegisterPage() {
   const navigate = useNavigate()
@@ -48,7 +49,7 @@ function RegisterPage() {
   }
 
   return (
-    <main className="app-page flex items-center justify-center">
+    <AuthBackground>
       <div className="app-panel w-full max-w-md">
         <h1 className="app-text mb-4 text-4xl font-bold">Crear cuenta</h1>
         <p className="app-muted mb-6 text-lg">
@@ -120,7 +121,7 @@ function RegisterPage() {
           Iniciar sesión
         </Link>
       </div>
-    </main>
+    </AuthBackground>
   )
 }
 
