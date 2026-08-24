@@ -4,11 +4,15 @@ import RegisterPage from './pages/auth/RegisterPage'
 import CheckEmailPage from './pages/auth/CheckEmailPage'
 import EmailConfirmedPage from './pages/auth/EmailConfirmedPage'
 import RequireAuth from './auth/RequireAuth'
-import PersonalSpacePage from './pages/PersonalSpacePage'
 import SharedSpacePage from './pages/SharedSpacePage'
 import { ThemeToggle } from './components/ThemeToggle'
 import { AppLayout } from './layouts/AppLayout'
 import HomePage from './pages/HomePage'
+import { PersonalSpaceLayout } from './layouts/PersonalSpaceLayout'
+import PersonalExpensesPage from './pages/personal/PersonalExpensesPage'
+import PersonalSummaryPage from './pages/personal/PersonalSummaryPage'
+import PersonalEvolutionPage from './pages/personal/PersonalEvolutionPage'
+import PersonalCategoriesPage from './pages/personal/PersonalCategoriesPage'
 
 function PublicLayout() {
   return (
@@ -24,8 +28,13 @@ function App() {
     <Routes>
       <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
         <Route index element={<HomePage />} />
-        <Route path="personal" element={<Navigate to="/personal/gastos" replace />} />
-        <Route path="personal/gastos" element={<PersonalSpacePage />} />
+        <Route path="personal" element={<PersonalSpaceLayout />}>
+          <Route index element={<Navigate to="/personal/gastos" replace />} />
+          <Route path="gastos" element={<PersonalExpensesPage />} />
+          <Route path="resumen" element={<PersonalSummaryPage />} />
+          <Route path="evolucion" element={<PersonalEvolutionPage />} />
+          <Route path="categorias" element={<PersonalCategoriesPage />} />
+        </Route>
         <Route path="spaces/:spaceId" element={<Navigate to="gastos" replace />} />
         <Route path="spaces/:spaceId/gastos" element={<SharedSpacePage />} />
       </Route>

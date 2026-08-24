@@ -65,7 +65,12 @@ export function AppNavigation({
           <li><NavLink to="/" end className={navigationClass}>Inicio</NavLink></li>
           <li className="pt-3">
             <p className="mb-1 px-3 text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Mis gastos</p>
-            <NavLink to="/personal/gastos" className={navigationClass}>Gastos</NavLink>
+            <ul className="space-y-1">
+              <li><NavLink to="/personal/gastos" className={navigationClass}>Gastos</NavLink></li>
+              <li><NavLink to="/personal/resumen" className={navigationClass}>Resumen</NavLink></li>
+              <li><NavLink to="/personal/evolucion" className={navigationClass}>Evolución</NavLink></li>
+              <li><NavLink to="/personal/categorias" className={navigationClass}>Categorías</NavLink></li>
+            </ul>
           </li>
           <li className="pt-3">
             <button
