@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router'
 import { createPersonalExpense } from '../domain/createPersonalExpense'
@@ -44,7 +44,6 @@ export default function ExpensesPage() {
   const { sharedSpaces } = useOutletContext<AppLayoutContext>()
   const [searchParams] = useSearchParams()
   const requestedSpace = searchParams.get('space')
-  const appliedQuerySpace = useRef<string | null>(null)
   const [personalSpace, setPersonalSpace] = useState<PersonalSpace | null>(null)
   const [isContextLoading, setIsContextLoading] = useState(true)
   const [contextError, setContextError] = useState('')
@@ -108,18 +107,34 @@ export default function ExpensesPage() {
   }, [contextRetry])
 
   useEffect(() => {
-    if (!personalSpace || !requestedSpace || appliedQuerySpace.current === requestedSpace) return
+    if (!personalSpace) return
+
+    if (!requestedSpace) {
+      setDestinationId(personalSpace.id)
+      setHistoryFilter(null)
+      return
+    }
+
     if (requestedSpace === 'personal') {
       setDestinationId(personalSpace.id)
       setHistoryFilter(personalSpace.id)
-      appliedQuerySpace.current = requestedSpace
       return
     }
+
     const requestedShared = sharedSpaces.find((space) => space.id === requestedSpace)
-    if (!requestedShared) return
+
+    if (!requestedShared) {
+      setDestinationId(personalSpace.id)
+      setHistoryFilter(null)
+      return
+    }
+
     setHistoryFilter(requestedShared.id)
-    if (requestedShared.estado === 'ACTIVO') setDestinationId(requestedShared.id)
-    appliedQuerySpace.current = requestedSpace
+    setDestinationId(
+      requestedShared.estado === 'ACTIVO'
+        ? requestedShared.id
+        : personalSpace.id,
+    )
   }, [personalSpace, requestedSpace, sharedSpaces])
 
   useEffect(() => {
@@ -155,6 +170,9 @@ export default function ExpensesPage() {
     setIsHistoryLoading(true)
     setHistoryError('')
     setLoadMoreError('')
+    setExpenses([])
+    setCursor(null)
+    setHasMore(false)
     getExpensesPage(historyFilter)
       .then((page) => {
         if (!isMounted) return
