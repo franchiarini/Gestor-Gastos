@@ -1,4 +1,4 @@
-import { Link, Navigate, Outlet, Routes, Route } from 'react-router'
+import { Link, Navigate, Outlet, Routes, Route, useParams } from 'react-router'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import CheckEmailPage from './pages/auth/CheckEmailPage'
@@ -7,7 +7,6 @@ import RequireAuth from './auth/RequireAuth'
 import { AppLayout } from './layouts/AppLayout'
 import HomePage from './pages/HomePage'
 import { PersonalSpaceLayout } from './layouts/PersonalSpaceLayout'
-import PersonalExpensesPage from './pages/personal/PersonalExpensesPage'
 import PersonalSummaryPage from './pages/personal/PersonalSummaryPage'
 import PersonalEvolutionPage from './pages/personal/PersonalEvolutionPage'
 import PersonalCategoriesPage from './pages/personal/PersonalCategoriesPage'
@@ -23,6 +22,11 @@ function PublicLayout() {
   return <Outlet />
 }
 
+function LegacySharedExpensesRedirect() {
+  const { spaceId } = useParams<{ spaceId: string }>()
+  return <Navigate to={spaceId ? `/gastos?space=${encodeURIComponent(spaceId)}` : '/gastos'} replace />
+}
+
 function App() {
   return (
     <Routes>
@@ -31,11 +35,12 @@ function App() {
         <Route path="gastos" element={<ExpensesPage />} />
         <Route path="personal" element={<PersonalSpaceLayout />}>
           <Route index element={<Navigate to="/personal/resumen" replace />} />
-          <Route path="gastos" element={<PersonalExpensesPage />} />
+          <Route path="gastos" element={<Navigate to="/gastos?space=personal" replace />} />
           <Route path="resumen" element={<PersonalSummaryPage />} />
           <Route path="evolucion" element={<PersonalEvolutionPage />} />
           <Route path="categorias" element={<PersonalCategoriesPage />} />
         </Route>
+        <Route path="spaces/:spaceId/gastos" element={<LegacySharedExpensesRedirect />} />
         <Route path="spaces/:spaceId" element={<SharedSpaceLayout />}>
           <Route index element={<Navigate to="resumen" replace />} />
           <Route path="resumen" element={<SharedSummaryPage />} />
