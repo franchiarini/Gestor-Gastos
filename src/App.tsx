@@ -5,7 +5,6 @@ import CheckEmailPage from './pages/auth/CheckEmailPage'
 import EmailConfirmedPage from './pages/auth/EmailConfirmedPage'
 import RequireAuth from './auth/RequireAuth'
 import SharedSpacePage from './pages/SharedSpacePage'
-import { ThemeToggle } from './components/ThemeToggle'
 import { AppLayout } from './layouts/AppLayout'
 import HomePage from './pages/HomePage'
 import { PersonalSpaceLayout } from './layouts/PersonalSpaceLayout'
@@ -15,12 +14,7 @@ import PersonalEvolutionPage from './pages/personal/PersonalEvolutionPage'
 import PersonalCategoriesPage from './pages/personal/PersonalCategoriesPage'
 
 function PublicLayout() {
-  return (
-    <>
-      <div className="mx-auto flex max-w-lg justify-end px-4 pt-4"><div className="w-48"><ThemeToggle variant="inline" /></div></div>
-      <Outlet />
-    </>
-  )
+  return <Outlet />
 }
 
 function App() {
