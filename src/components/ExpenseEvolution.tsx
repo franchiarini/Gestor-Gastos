@@ -102,8 +102,7 @@ export function ExpenseEvolution({ spaceId, refreshKey }: ExpenseEvolutionProps)
   )
 
   return (
-    <section className="mb-10 w-full text-left md:relative md:left-1/2 md:w-[min(72rem,calc(100vw-3rem))] md:-translate-x-1/2" aria-labelledby={`expense-evolution-${spaceId}`}>
-      <h2 id={`expense-evolution-${spaceId}`} className="mb-4 text-2xl font-bold text-gray-900">Evolución</h2>
+    <section className="mb-10 w-full text-left md:relative md:left-1/2 md:w-[min(72rem,calc(100vw-3rem))] md:-translate-x-1/2" aria-label="Evolución de gastos">
       {isLoading && <p className="text-gray-600">Cargando evolución...</p>}
       {error && <p role="alert" className="text-red-600">{error}</p>}
       {!isLoading && !error && evolution?.totals.length === 0 && (
