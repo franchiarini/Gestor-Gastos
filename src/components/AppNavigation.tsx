@@ -112,6 +112,7 @@ export function AppNavigation({
             </button>
             <ul id="income-navigation" hidden={!isIncomeExpanded} className="ml-3 space-y-0.5 border-l border-[var(--color-border)] pl-2">
               <li><NavLink to="/ingresos/movimientos" className={spaceNavigationClass}>Movimientos</NavLink></li>
+              <li><NavLink to="/ingresos/resumen" className={spaceNavigationClass}>Resumen</NavLink></li>
               <li><NavLink to="/ingresos/categorias" className={spaceNavigationClass}>Categorías</NavLink></li>
             </ul>
           </li>

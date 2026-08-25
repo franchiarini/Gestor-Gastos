@@ -20,6 +20,7 @@ import SharedManagementPage from './pages/shared/SharedManagementPage'
 import { IncomeLayout } from './layouts/IncomeLayout'
 import IncomeMovementsPage from './pages/incomes/IncomeMovementsPage'
 import IncomeCategoriesPage from './pages/incomes/IncomeCategoriesPage'
+import IncomeSummaryPage from './pages/incomes/IncomeSummaryPage'
 
 function PublicLayout() {
   return <Outlet />
@@ -39,6 +40,7 @@ function App() {
         <Route path="ingresos" element={<IncomeLayout />}>
           <Route index element={<Navigate to="/ingresos/movimientos" replace />} />
           <Route path="movimientos" element={<IncomeMovementsPage />} />
+          <Route path="resumen" element={<IncomeSummaryPage />} />
           <Route path="categorias" element={<IncomeCategoriesPage />} />
         </Route>
         <Route path="personal" element={<PersonalSpaceLayout />}>
