@@ -22,6 +22,7 @@ import IncomeMovementsPage from './pages/incomes/IncomeMovementsPage'
 import IncomeCategoriesPage from './pages/incomes/IncomeCategoriesPage'
 import IncomeSummaryPage from './pages/incomes/IncomeSummaryPage'
 import IncomeEvolutionPage from './pages/incomes/IncomeEvolutionPage'
+import BalancePage from './pages/BalancePage'
 
 function PublicLayout() {
   return <Outlet />
@@ -38,6 +39,7 @@ function App() {
       <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
         <Route index element={<HomePage />} />
         <Route path="gastos" element={<ExpensesPage />} />
+        <Route path="balance" element={<BalancePage />} />
         <Route path="ingresos" element={<IncomeLayout />}>
           <Route index element={<Navigate to="/ingresos/movimientos" replace />} />
           <Route path="movimientos" element={<IncomeMovementsPage />} />

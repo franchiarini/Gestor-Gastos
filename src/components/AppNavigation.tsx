@@ -117,6 +117,7 @@ export function AppNavigation({
               <li><NavLink to="/ingresos/categorias" className={spaceNavigationClass}>Categorías</NavLink></li>
             </ul>
           </li>
+          <li><NavLink to="/balance" className={navigationClass}>Balance</NavLink></li>
           <li className="pt-2">
             <button
               type="button"
