@@ -39,6 +39,7 @@ export function AppNavigation({
 }: AppNavigationProps) {
   const { pathname } = useLocation()
   const activeSpaceId = pathname.match(/^\/spaces\/([^/]+)/)?.[1] ?? null
+  const [isIncomeExpanded, setIsIncomeExpanded] = useState(() => pathname.startsWith('/ingresos'))
   const [isPersonalExpanded, setIsPersonalExpanded] = useState(() => pathname.startsWith('/personal/'))
   const [areSpacesExpanded, setAreSpacesExpanded] = useState(() => pathname.startsWith('/spaces/'))
   const [expandedSpaceId, setExpandedSpaceId] = useState<string | null>(activeSpaceId)
@@ -46,6 +47,7 @@ export function AppNavigation({
   const archivedSpaces = sharedSpaces.filter((space) => space.estado === 'ARCHIVADO')
 
   useEffect(() => {
+    if (pathname.startsWith('/ingresos')) setIsIncomeExpanded(true)
     if (pathname.startsWith('/personal/')) setIsPersonalExpanded(true)
     if (pathname.startsWith('/spaces/')) setAreSpacesExpanded(true)
   }, [pathname])
@@ -97,6 +99,22 @@ export function AppNavigation({
         <ul className="space-y-1">
           <li><NavLink to="/" end className={navigationClass}>Inicio</NavLink></li>
           <li><NavLink to="/gastos" className={navigationClass}>Gastos</NavLink></li>
+          <li className="pt-2">
+            <button
+              type="button"
+              aria-expanded={isIncomeExpanded}
+              aria-controls="income-navigation"
+              onClick={() => setIsIncomeExpanded((expanded) => !expanded)}
+              className="flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-2.5 text-left font-semibold text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-muted)]"
+            >
+              <span>Ingresos</span>
+              <span aria-hidden="true">{isIncomeExpanded ? '▾' : '›'}</span>
+            </button>
+            <ul id="income-navigation" hidden={!isIncomeExpanded} className="ml-3 space-y-0.5 border-l border-[var(--color-border)] pl-2">
+              <li><NavLink to="/ingresos/movimientos" className={spaceNavigationClass}>Movimientos</NavLink></li>
+              <li><NavLink to="/ingresos/categorias" className={spaceNavigationClass}>Categorías</NavLink></li>
+            </ul>
+          </li>
           <li className="pt-2">
             <button
               type="button"

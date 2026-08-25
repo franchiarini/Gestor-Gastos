@@ -17,6 +17,9 @@ import SharedEvolutionPage from './pages/shared/SharedEvolutionPage'
 import SharedCategoriesPage from './pages/shared/SharedCategoriesPage'
 import SharedMembersPage from './pages/shared/SharedMembersPage'
 import SharedManagementPage from './pages/shared/SharedManagementPage'
+import { IncomeLayout } from './layouts/IncomeLayout'
+import IncomeMovementsPage from './pages/incomes/IncomeMovementsPage'
+import IncomeCategoriesPage from './pages/incomes/IncomeCategoriesPage'
 
 function PublicLayout() {
   return <Outlet />
@@ -33,6 +36,11 @@ function App() {
       <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
         <Route index element={<HomePage />} />
         <Route path="gastos" element={<ExpensesPage />} />
+        <Route path="ingresos" element={<IncomeLayout />}>
+          <Route index element={<Navigate to="/ingresos/movimientos" replace />} />
+          <Route path="movimientos" element={<IncomeMovementsPage />} />
+          <Route path="categorias" element={<IncomeCategoriesPage />} />
+        </Route>
         <Route path="personal" element={<PersonalSpaceLayout />}>
           <Route index element={<Navigate to="/personal/resumen" replace />} />
           <Route path="gastos" element={<Navigate to="/gastos?space=personal" replace />} />
