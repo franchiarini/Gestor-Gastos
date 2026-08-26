@@ -12,6 +12,7 @@ export type SharedSpaceContext = {
   id: string
   nombre: string
   estado: 'ACTIVO' | 'ARCHIVADO'
+  membresiaId: string
   rol: SharedSpaceRole
   categorias: SharedSpaceCategory[]
 }
@@ -24,6 +25,7 @@ type SpaceRow = {
 }
 
 type MembershipRow = {
+  id: string
   rol: SharedSpaceRole
   estado: string
 }
@@ -45,7 +47,7 @@ export async function getSharedSpaceContext(
       .maybeSingle(),
     supabase
       .from('membresias')
-      .select('rol, estado')
+      .select('id, rol, estado')
       .eq('usuario_id', userData.user.id)
       .eq('espacio_id', spaceId)
       .maybeSingle(),
@@ -83,6 +85,7 @@ export async function getSharedSpaceContext(
     id: space.id,
     nombre: space.nombre,
     estado: space.estado as 'ACTIVO' | 'ARCHIVADO',
+    membresiaId: membership.id,
     rol: membership.rol,
     categorias: categories as SharedSpaceCategory[],
   }

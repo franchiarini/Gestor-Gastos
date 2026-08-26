@@ -13,6 +13,7 @@ import PersonalCategoriesPage from './pages/personal/PersonalCategoriesPage'
 import ExpensesPage from './pages/ExpensesPage'
 import { SharedSpaceLayout } from './layouts/SharedSpaceLayout'
 import SharedSummaryPage from './pages/shared/SharedSummaryPage'
+import SharedBalancePage from './pages/shared/SharedBalancePage'
 import SharedEvolutionPage from './pages/shared/SharedEvolutionPage'
 import SharedCategoriesPage from './pages/shared/SharedCategoriesPage'
 import SharedMembersPage from './pages/shared/SharedMembersPage'
@@ -58,6 +59,7 @@ function App() {
         <Route path="spaces/:spaceId" element={<SharedSpaceLayout />}>
           <Route index element={<Navigate to="resumen" replace />} />
           <Route path="resumen" element={<SharedSummaryPage />} />
+          <Route path="balance" element={<SharedBalancePage />} />
           <Route path="evolucion" element={<SharedEvolutionPage />} />
           <Route path="categorias" element={<SharedCategoriesPage />} />
           <Route path="integrantes" element={<SharedMembersPage />} />

@@ -58,6 +58,7 @@ export function AppNavigation({
 
   const sharedSections = [
     ['resumen', 'Resumen'],
+    ['balance', 'Balance'],
     ['evolucion', 'Evolución'],
     ['categorias', 'Categorías'],
     ['integrantes', 'Integrantes'],

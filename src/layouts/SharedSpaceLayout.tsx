@@ -8,6 +8,7 @@ export type SharedSpaceLayoutContext = {
   spaceId: string
   nombre: string
   estado: 'ACTIVO' | 'ARCHIVADO'
+  membresiaId: string
   rol: SharedSpaceRole
   categorias: SharedSpaceContext['categorias']
   refreshSpaceContext: () => Promise<void>
@@ -57,7 +58,7 @@ export function SharedSpaceLayout() {
           <p className="app-muted">Rol: {context.rol === 'ADMIN' ? 'Administrador' : 'Integrante'}</p>
         </header>
         {context.estado === 'ARCHIVADO' && <div className="mb-8 rounded-2xl border border-amber-300 bg-amber-50 p-5 dark:border-amber-700 dark:bg-amber-950/60"><p className="font-bold text-amber-950 dark:text-amber-100">Espacio archivado</p><p className="text-amber-900 dark:text-amber-200">Modo sólo lectura. El historial permanece disponible.</p></div>}
-        <Outlet context={{ spaceId: context.id, nombre: context.nombre, estado: context.estado, rol: context.rol, categorias: context.categorias, refreshSpaceContext, refreshSharedSpaces } satisfies SharedSpaceLayoutContext} />
+        <Outlet context={{ spaceId: context.id, nombre: context.nombre, estado: context.estado, membresiaId: context.membresiaId, rol: context.rol, categorias: context.categorias, refreshSpaceContext, refreshSharedSpaces } satisfies SharedSpaceLayoutContext} />
       </div>
     </main>
   )
