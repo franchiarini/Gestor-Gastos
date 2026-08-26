@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Link } from 'react-router'
 import { SectionHeader } from '../../components/SectionHeader'
 import { FinancialSectionLinks } from '../../components/FinancialSectionLinks'
+import { EmptyState } from '../../components/EmptyState'
 import { createIncome } from '../../domain/createIncome'
 import { deleteIncome } from '../../domain/deleteIncome'
 import { getIncomeCategories } from '../../domain/getIncomeCategories'
@@ -232,7 +233,7 @@ export default function IncomeMovementsPage() {
       <section className="app-panel" aria-labelledby="income-history-title">
         <h3 id="income-history-title" className="app-text mb-5 text-2xl font-semibold">Historial de ingresos</h3>
         {isHistoryLoading ? <p className="app-muted">Cargando historial...</p> : historyError ? <div><p role="alert" className="app-error mb-3">{historyError}</p><button type="button" onClick={() => setHistoryRetry((count) => count + 1)} className="app-button-primary">Reintentar</button></div> : incomes.length === 0 ? (
-          <div className="rounded-2xl bg-[var(--color-surface-muted)] p-6 text-center"><p className="app-text font-semibold">Todavía no registraste ningún ingreso.</p><p className="app-muted mt-2">Registrá de dónde viene tu dinero para empezar a construir tu historial.</p></div>
+          <EmptyState title="No hay ingresos registrados" description="Agregá tu primer ingreso para empezar a ver cómo evoluciona." />
         ) : (
           <ul className="space-y-6">
             {groupIncomesByDate(incomes).map((group) => <li key={group.fecha} className="list-none"><h4 className="app-divider app-muted mb-3 border-b pb-2 text-sm font-semibold uppercase tracking-wide">{formatIncomeDateGroup(group.fecha)}</h4><ul className="space-y-4">{group.incomes.map((income) => <li key={income.id} className="app-divider min-w-0 border-b pb-4">{editingIncome?.id === income.id ? (

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
+import { EmptyState } from './EmptyState'
 import { getPersonalBalanceMonthly } from '../domain/getPersonalBalanceMonthly'
 import type { PersonalBalanceMonthly as PersonalBalanceMonthlyData } from '../domain/getPersonalBalanceMonthly'
 import { getPersonalBalanceSharedBreakdown } from '../domain/getPersonalBalanceSharedBreakdown'
@@ -220,16 +221,7 @@ export function PersonalBalanceMonthly() {
       )}
 
       {!isLoading && !error && hasNoMovements && (
-        <div className="app-panel mx-auto max-w-2xl text-center">
-          <h3 className="app-text text-xl font-semibold">Todavía no hay movimientos para calcular tu balance de este mes.</h3>
-          <p className="app-muted mx-auto mb-5 mt-2 max-w-xl">
-            Registrá ingresos y gastos para empezar a ver cómo termina tu mes.
-          </p>
-          <div className="flex flex-col justify-center gap-3 sm:flex-row">
-            <Link to="/ingresos/movimientos" className="app-button-primary">Registrar ingreso</Link>
-            <Link to="/gastos" className="app-button-secondary">Registrar gasto</Link>
-          </div>
-        </div>
+        <EmptyState title="Tu balance aparecerá cuando registres ingresos o gastos." description="Registrá movimientos para empezar a ver cómo termina tu mes." action={<><Link to="/ingresos/movimientos" className="app-button-primary">Registrar ingreso</Link><Link to="/gastos" className="app-button-secondary">Registrar gasto</Link></>} className="mx-auto max-w-2xl" />
       )}
 
       {!isLoading && !error && balance && !hasNoMovements && (

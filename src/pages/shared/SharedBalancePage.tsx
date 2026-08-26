@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useOutletContext } from 'react-router'
 import { SectionHeader } from '../../components/SectionHeader'
+import { EmptyState } from '../../components/EmptyState'
 import { getSharedSpaceBalanceMonthly } from '../../domain/getSharedSpaceBalanceMonthly'
 import type { SharedBalanceMember, SharedBalanceReason, SharedSpaceBalanceMonthly } from '../../domain/getSharedSpaceBalanceMonthly'
 import { setSharedDeclaredIncome } from '../../domain/setSharedDeclaredIncome'
@@ -231,7 +232,7 @@ export default function SharedBalancePage() {
           {actionMessage && <p role="status" className="app-success mt-3 text-sm">{actionMessage}</p>}
         </section>
 
-        {!balance.proportionalApplicable && balance.expensesTotal === 0 && <section className="app-panel text-center"><h3 className="app-text text-xl font-bold">No hubo gastos en este espacio durante este mes.</h3><p className="app-muted mt-2">Las declaraciones registradas siguen visibles para este período.</p></section>}
+        {!balance.proportionalApplicable && balance.expensesTotal === 0 && <EmptyState title="No hubo gastos en este espacio durante este mes." description="Las declaraciones registradas siguen visibles para este período." />}
 
         {balance.proportionalApplicable && balance.proportionalReasons.length > 0 && <section className="rounded-3xl border border-amber-300 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-950/50" aria-labelledby="proportional-status-title"><h3 id="proportional-status-title" className="font-bold text-amber-950 dark:text-amber-100">Aportes proporcionales todavía no disponibles</h3><ul className="mt-3 space-y-2 text-sm text-amber-950 dark:text-amber-100">{balance.proportionalReasons.map((reason) => <li key={reason}>{reasonMessage(reason)}</li>)}</ul>{balance.proportionalReasons.includes('MISSING_DECLARATIONS') && pendingMembers.length > 0 && <div className="mt-4 border-t border-amber-300 pt-3 text-sm dark:border-amber-800"><p className="font-semibold text-amber-950 dark:text-amber-100">Pendientes:</p><ul className="mt-1 text-amber-900 dark:text-amber-200">{pendingMembers.map((member) => <li key={member.membershipId}>{member.name}{member.currentStatus === 'FINALIZADA' ? ' · Ya no pertenece al espacio' : ''}</li>)}</ul></div>}</section>}
 

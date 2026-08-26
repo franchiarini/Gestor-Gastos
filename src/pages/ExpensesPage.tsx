@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router'
 import { FinancialSectionLinks } from '../components/FinancialSectionLinks'
+import { EmptyState } from '../components/EmptyState'
 import { createPersonalExpense } from '../domain/createPersonalExpense'
 import { createSharedExpense } from '../domain/createSharedExpense'
 import { deletePersonalExpense } from '../domain/deletePersonalExpense'
@@ -355,7 +356,7 @@ export default function ExpensesPage() {
           </div>
 
           {formError && !editingExpense && <p role="alert" className="app-error mb-4 text-sm">{formError}</p>}
-          {isHistoryLoading ? <p className="app-muted">Cargando historial...</p> : historyError ? <div><p role="alert" className="app-error mb-3">{historyError}</p><button type="button" onClick={() => setHistoryRetry((value) => value + 1)} className="app-button-primary">Reintentar</button></div> : expenses.length === 0 ? <p className="app-muted">{historyFilter ? 'No hay gastos registrados en este espacio.' : 'Aún no hay gastos registrados.'}</p> : (
+          {isHistoryLoading ? <p className="app-muted">Cargando historial...</p> : historyError ? <div><p role="alert" className="app-error mb-3">{historyError}</p><button type="button" onClick={() => setHistoryRetry((value) => value + 1)} className="app-button-primary">Reintentar</button></div> : expenses.length === 0 ? <EmptyState title="No hay gastos todavía" description={historyFilter ? 'No hay gastos registrados para el espacio seleccionado.' : 'Registrá tu primer gasto para empezar a llevar el seguimiento.'} /> : (
             <ul className="space-y-6">
               {groupExpensesByDate(expenses).map((group) => <li key={group.fecha} className="list-none"><h3 className="app-divider app-muted mb-3 border-b pb-2 text-sm font-semibold uppercase tracking-wide">{formatExpenseDateGroup(group.fecha)}</h3><ul className="space-y-4">{group.expenses.map((expense) => <li key={expense.id} className="app-divider min-w-0 border-b pb-4">{editingExpense?.id === expense.id ? (
                 <form onSubmit={handleUpdate} className="space-y-3">

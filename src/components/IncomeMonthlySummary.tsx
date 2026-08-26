@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { getIncomeMonthlySummary } from '../domain/getIncomeMonthlySummary'
 import type { IncomeMonthlySummary as IncomeMonthlySummaryData } from '../domain/getIncomeMonthlySummary'
+import { EmptyState } from './EmptyState'
 
 type CategoryView = 'distribution' | 'detail'
 
@@ -126,11 +127,7 @@ export function IncomeMonthlySummary({ month: controlledMonth, showMonthNavigati
       )}
 
       {!isLoading && !error && summary?.incomeCount === 0 && (
-        <div className="app-panel mx-auto max-w-2xl text-center">
-          <h4 className="app-text text-xl font-semibold">Todavía no registraste ingresos en este mes.</h4>
-          <p className="app-muted mx-auto mb-5 mt-2 max-w-xl">Cuando registres movimientos, acá vas a ver cuánto ingresó y cómo se distribuyó entre tus categorías.</p>
-          <Link to="/ingresos/movimientos" className="app-button-primary">Registrar ingreso</Link>
-        </div>
+        <EmptyState title="No hubo ingresos en este mes." description="Cuando registres ingresos, vas a ver cuánto ingresó y cómo se distribuyó entre tus categorías." action={<Link to="/ingresos/movimientos" className="app-button-primary">Registrar ingreso</Link>} className="mx-auto max-w-2xl" />
       )}
 
       {!isLoading && !error && summary && summary.incomeCount > 0 && (

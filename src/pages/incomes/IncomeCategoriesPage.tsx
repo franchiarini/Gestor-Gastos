@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { SectionHeader } from '../../components/SectionHeader'
+import { EmptyState } from '../../components/EmptyState'
 import { archiveIncomeCategory } from '../../domain/archiveIncomeCategory'
 import { createIncomeCategory } from '../../domain/createIncomeCategory'
 import { deleteIncomeCategory } from '../../domain/deleteIncomeCategory'
@@ -171,9 +172,9 @@ export default function IncomeCategoriesPage({ embedded = false }: IncomeCategor
         {categoryError && <p role="alert" className="app-error mb-4 text-sm">{categoryError}</p>}
         {categoryMessage && <p role="status" className="app-success mb-4 text-sm">{categoryMessage}</p>}
         <h3 className="app-text mb-3 text-xl font-semibold">Categorías activas</h3>
-        {activeCategories.length === 0 ? <p className="app-muted mb-8">No hay categorías activas.</p> : <ul className="mb-8 space-y-3">{activeCategories.map((category) => renderCategory(category, false))}</ul>}
+        {activeCategories.length === 0 ? <EmptyState title="No hay categorías activas." description="Podés crear una categoría para organizar tus ingresos." compact className="mb-8" /> : <ul className="mb-8 space-y-3">{activeCategories.map((category) => renderCategory(category, false))}</ul>}
         <h3 className="app-text mb-3 text-xl font-semibold">Categorías archivadas</h3>
-        {archivedCategories.length === 0 ? <p className="app-muted">No hay categorías archivadas.</p> : <ul className="space-y-3">{archivedCategories.map((category) => renderCategory(category, true))}</ul>}
+        {archivedCategories.length === 0 ? <EmptyState title="No hay categorías archivadas." compact /> : <ul className="space-y-3">{archivedCategories.map((category) => renderCategory(category, true))}</ul>}
       </section>
     </>
   )

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { getExpenseEvolution } from '../domain/getExpenseEvolution'
 import type { EvolutionPoint, ExpenseEvolution as ExpenseEvolutionData } from '../domain/getExpenseEvolution'
+import { EmptyState } from './EmptyState'
 
 type ExpenseEvolutionProps = {
   spaceId: string
   refreshKey?: number
+  emptyTitle?: string
 }
 
 const currencyFormatter = new Intl.NumberFormat('es-AR', {
@@ -63,7 +65,7 @@ function EvolutionChart({ points, colorClass }: { points: EvolutionPoint[]; colo
   )
 }
 
-export function ExpenseEvolution({ spaceId, refreshKey }: ExpenseEvolutionProps) {
+export function ExpenseEvolution({ spaceId, refreshKey, emptyTitle = 'Todavía no hay movimientos suficientes para mostrar una evolución.' }: ExpenseEvolutionProps) {
   const [evolution, setEvolution] = useState<ExpenseEvolutionData | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -106,7 +108,7 @@ export function ExpenseEvolution({ spaceId, refreshKey }: ExpenseEvolutionProps)
       {isLoading && <p className="text-gray-600">Cargando evolución...</p>}
       {error && <p role="alert" className="text-red-600">{error}</p>}
       {!isLoading && !error && evolution?.totals.length === 0 && (
-        <p className="rounded-2xl bg-gray-100 p-6 text-center text-gray-600">No hay suficiente historial de gastos para mostrar la evolución.</p>
+        <EmptyState title={emptyTitle} description="La evolución aparecerá cuando exista historial de gastos para comparar." />
       )}
       {!isLoading && !error && evolution && evolution.totals.length > 0 && (
         <div className="grid gap-5 lg:grid-cols-2">

@@ -5,6 +5,7 @@ import type {
   IncomeEvolution as IncomeEvolutionData,
   IncomeEvolutionPoint,
 } from '../domain/getIncomeEvolution'
+import { EmptyState } from './EmptyState'
 
 const currencyFormatter = new Intl.NumberFormat('es-AR', {
   style: 'currency',
@@ -147,13 +148,7 @@ export function IncomeEvolution() {
       )}
 
       {!isLoading && !error && !hasHistory && (
-        <div className="app-panel mx-auto max-w-2xl text-center">
-          <h3 className="app-text text-xl font-semibold">Todavía no tenemos historial para mostrar tu evolución.</h3>
-          <p className="app-muted mx-auto mb-5 mt-2 max-w-xl">
-            Cuando registres ingresos, acá vas a poder ver cómo cambian mes a mes.
-          </p>
-          <Link to="/ingresos/movimientos" className="app-button-primary">Registrar ingreso</Link>
-        </div>
+        <EmptyState title="Todavía no hay ingresos suficientes para mostrar una evolución." description="Cuando registres ingresos, acá vas a poder ver cómo cambian mes a mes." action={<Link to="/ingresos/movimientos" className="app-button-primary">Registrar ingreso</Link>} className="mx-auto max-w-2xl" />
       )}
 
       {!isLoading && !error && evolution && hasHistory && (

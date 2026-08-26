@@ -8,6 +8,7 @@ import type { SpaceCategory } from '../../domain/getCategoriesForSpace'
 import { updateCategory } from '../../domain/updateCategory'
 import type { PersonalSpaceLayoutContext } from '../../layouts/PersonalSpaceLayout'
 import { SectionHeader } from '../../components/SectionHeader'
+import { EmptyState } from '../../components/EmptyState'
 import IncomeCategoriesPage from '../incomes/IncomeCategoriesPage'
 
 type CategorySection = 'gastos' | 'ingresos'
@@ -144,8 +145,8 @@ export default function PersonalCategoriesPage() {
   return <><SectionHeader id="personal-categories-title" title="Categorías" description="Gestioná por separado las categorías de gastos e ingresos." />{sectionTabs}<section id="gastos" className="app-panel mx-auto max-w-4xl scroll-mt-24" aria-labelledby="personal-categories-title">
     <form onSubmit={handleCreate} className="mb-6 flex flex-col gap-2 sm:flex-row"><input aria-label="Nombre de categoría" value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="Nombre de categoría" disabled={isSubmitting} className="app-control flex-1" /><button type="submit" disabled={isSubmitting} className="app-button-primary w-full sm:w-auto">{isSubmitting ? 'Guardando...' : 'Agregar categoría'}</button></form>
     {categoryError && <p role="alert" className="mb-4 text-sm text-red-600">{categoryError}</p>}
-    {activeCategories.length === 0 ? <p className="mb-8 text-gray-600">No hay categorías activas.</p> : <ul className="mb-8 space-y-3 text-gray-600">{activeCategories.map((category) => renderCategory(category, false))}</ul>}
+    {activeCategories.length === 0 ? <EmptyState title="No hay categorías activas." description="Podés crear una categoría para organizar tus gastos." compact className="mb-8" /> : <ul className="app-muted mb-8 space-y-3">{activeCategories.map((category) => renderCategory(category, false))}</ul>}
     <h3 className="mb-3 text-xl font-semibold text-gray-900">Categorías archivadas</h3>
-    {archivedCategories.length === 0 ? <p className="text-gray-600">No hay categorías archivadas.</p> : <ul className="space-y-3 text-gray-600">{archivedCategories.map((category) => renderCategory(category, true))}</ul>}
+    {archivedCategories.length === 0 ? <EmptyState title="No hay categorías archivadas." compact /> : <ul className="app-muted space-y-3">{archivedCategories.map((category) => renderCategory(category, true))}</ul>}
   </section></>
 }

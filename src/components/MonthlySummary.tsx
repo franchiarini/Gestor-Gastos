@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { getMonthlySummary } from '../domain/getMonthlySummary'
 import type { MonthlySummary as MonthlySummaryData } from '../domain/getMonthlySummary'
+import { EmptyState } from './EmptyState'
 
 type MonthlySummaryProps = {
   spaceId: string
@@ -116,7 +117,7 @@ export function MonthlySummary({ spaceId, showMembers, refreshKey, month: contro
       {isLoading && <p className="text-center text-gray-600">Cargando resumen mensual...</p>}
       {error && <p role="alert" className="text-center text-red-600">{error}</p>}
       {!isLoading && !error && summary?.expenseCount === 0 && (
-        <p className="rounded-2xl bg-gray-100 p-6 text-center text-gray-600">No hay gastos registrados en este mes.</p>
+        <EmptyState title={showMembers ? 'No hubo gastos en este espacio durante este mes.' : 'No hubo gastos en este mes.'} description="Cuando registres gastos, el resumen mensual aparecerá acá." />
       )}
 
       {!isLoading && !error && summary && summary.expenseCount > 0 && (
