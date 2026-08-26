@@ -7,6 +7,8 @@ type MonthlySummaryProps = {
   spaceId: string
   showMembers: boolean
   refreshKey?: number
+  month?: string
+  showMonthNavigation?: boolean
 }
 
 type SummaryView = 'distribution' | 'detail'
@@ -62,9 +64,10 @@ function getDonutStyle(items: Array<{ percentage: number }>): CSSProperties {
   }
 }
 
-export function MonthlySummary({ spaceId, showMembers, refreshKey }: MonthlySummaryProps) {
+export function MonthlySummary({ spaceId, showMembers, refreshKey, month: controlledMonth, showMonthNavigation = true }: MonthlySummaryProps) {
   const currentMonth = getCurrentMonth()
-  const [month, setMonth] = useState(currentMonth)
+  const [internalMonth, setInternalMonth] = useState(currentMonth)
+  const month = controlledMonth ?? internalMonth
   const [summary, setSummary] = useState<MonthlySummaryData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -98,17 +101,17 @@ export function MonthlySummary({ spaceId, showMembers, refreshKey }: MonthlySumm
 
   return (
     <section className="mb-10 w-full text-left md:relative md:left-1/2 md:w-[min(72rem,calc(100vw-3rem))] md:-translate-x-1/2" aria-labelledby={`monthly-summary-${spaceId}`}>
-      <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3">
-        <button type="button" onClick={() => setMonth((value) => shiftMonth(value, -1))} className="justify-self-start rounded border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 dark:bg-slate-900 sm:px-3 sm:text-base">
+      {showMonthNavigation && <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3">
+        <button type="button" onClick={() => setInternalMonth((value) => shiftMonth(value, -1))} className="justify-self-start rounded border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 dark:bg-slate-900 sm:px-3 sm:text-base">
           Mes anterior
         </button>
         <h2 id={`monthly-summary-${spaceId}`} className="min-w-0 text-center text-lg font-semibold text-gray-900 sm:text-2xl">
           {formatMonth(month)}
         </h2>
-        <button type="button" onClick={() => setMonth((value) => shiftMonth(value, 1))} disabled={month >= currentMonth} className="justify-self-end rounded border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 disabled:cursor-not-allowed disabled:text-[var(--color-disabled)] dark:bg-slate-900 sm:px-3 sm:text-base">
+        <button type="button" onClick={() => setInternalMonth((value) => shiftMonth(value, 1))} disabled={month >= currentMonth} className="justify-self-end rounded border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 disabled:cursor-not-allowed disabled:text-[var(--color-disabled)] dark:bg-slate-900 sm:px-3 sm:text-base">
           Mes siguiente
         </button>
-      </div>
+      </div>}
 
       {isLoading && <p className="text-center text-gray-600">Cargando resumen mensual...</p>}
       {error && <p role="alert" className="text-center text-red-600">{error}</p>}

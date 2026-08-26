@@ -6,6 +6,11 @@ import type { IncomeMonthlySummary as IncomeMonthlySummaryData } from '../domain
 
 type CategoryView = 'distribution' | 'detail'
 
+type IncomeMonthlySummaryProps = {
+  month?: string
+  showMonthNavigation?: boolean
+}
+
 const chartColors = [
   'var(--chart-1)',
   'var(--chart-2)',
@@ -63,9 +68,10 @@ function getDonutStyle(items: Array<{ percentage: number }>): CSSProperties {
   return { background: `conic-gradient(${segments.join(', ')})` }
 }
 
-export function IncomeMonthlySummary() {
+export function IncomeMonthlySummary({ month: controlledMonth, showMonthNavigation = true }: IncomeMonthlySummaryProps = {}) {
   const currentMonth = getCurrentMonth()
-  const [month, setMonth] = useState(currentMonth)
+  const [internalMonth, setInternalMonth] = useState(currentMonth)
+  const month = controlledMonth ?? internalMonth
   const [summary, setSummary] = useState<IncomeMonthlySummaryData | null>(null)
   const [categoryView, setCategoryView] = useState<CategoryView>('distribution')
   const [isLoading, setIsLoading] = useState(true)
@@ -89,18 +95,18 @@ export function IncomeMonthlySummary() {
   }, [month, retryCount])
 
   function showPreviousMonth() {
-    setMonth((value) => shiftMonth(value, -1))
+    setInternalMonth((value) => shiftMonth(value, -1))
   }
 
   function showNextMonth() {
-    setMonth((value) => value >= currentMonth ? value : shiftMonth(value, 1))
+    setInternalMonth((value) => value >= currentMonth ? value : shiftMonth(value, 1))
   }
 
   const principalCategory = summary?.categories[0]
 
   return (
     <section className="mb-10 w-full text-left md:relative md:left-1/2 md:w-[min(72rem,calc(100vw-3rem))] md:-translate-x-1/2" aria-labelledby="income-summary-month">
-      <div className="mb-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3">
+      {showMonthNavigation && <div className="mb-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3">
         <button type="button" onClick={showPreviousMonth} className="app-button-secondary justify-self-start px-2 text-sm sm:px-3 sm:text-base" aria-label="Mostrar mes anterior">
           ← <span className="hidden sm:inline">Mes anterior</span><span className="sm:hidden">Anterior</span>
         </button>
@@ -108,7 +114,7 @@ export function IncomeMonthlySummary() {
         <button type="button" onClick={showNextMonth} disabled={month >= currentMonth} className="app-button-secondary justify-self-end px-2 text-sm sm:px-3 sm:text-base" aria-label="Mostrar mes siguiente">
           <span className="hidden sm:inline">Mes siguiente</span><span className="sm:hidden">Siguiente</span> →
         </button>
-      </div>
+      </div>}
 
       {isLoading && <div className="app-panel min-h-44 text-center"><p className="app-muted">Cargando resumen de ingresos...</p></div>}
 

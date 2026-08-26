@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router'
+import { FinancialSectionLinks } from '../components/FinancialSectionLinks'
 import { createPersonalExpense } from '../domain/createPersonalExpense'
 import { createSharedExpense } from '../domain/createSharedExpense'
 import { deletePersonalExpense } from '../domain/deletePersonalExpense'
@@ -326,6 +327,8 @@ export default function ExpensesPage() {
           <h1 className="app-text text-3xl font-bold sm:text-4xl">Gastos</h1>
           <p className="app-muted mt-2">Registrá un gasto y consultá el historial de todos tus espacios.</p>
         </header>
+
+        <div className="mb-6"><FinancialSectionLinks section="gastos" /></div>
 
         <section className="app-panel mb-6">
           <h2 className="app-text mb-4 text-2xl font-semibold">Registrar gasto</h2>

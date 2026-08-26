@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router'
 import { SectionHeader } from '../../components/SectionHeader'
+import { FinancialSectionLinks } from '../../components/FinancialSectionLinks'
 import { createIncome } from '../../domain/createIncome'
 import { deleteIncome } from '../../domain/deleteIncome'
 import { getIncomeCategories } from '../../domain/getIncomeCategories'
@@ -210,6 +211,7 @@ export default function IncomeMovementsPage() {
   return (
     <>
       <SectionHeader id="income-movements-title" title="Movimientos" description="Registrá tus ingresos y consultá el historial de dinero recibido." />
+      <div className="mb-6"><FinancialSectionLinks section="ingresos" /></div>
       <section className="app-panel mb-6" aria-labelledby="new-income-title">
         <h3 id="new-income-title" className="app-text mb-4 text-2xl font-semibold">Registrar ingreso</h3>
         <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
@@ -219,7 +221,7 @@ export default function IncomeMovementsPage() {
           <label className="app-text block text-sm font-semibold md:col-span-2">Descripción (opcional)<input value={description} onChange={(event) => setDescription(event.target.value)} disabled={isSubmitting} className="app-control mt-1" /></label>
           <div className="md:col-span-2">
             {categoriesError && <div className="mb-3"><p role="alert" className="app-error mb-2 text-sm">{categoriesError}</p><button type="button" onClick={() => setCategoriesRetry((count) => count + 1)} className="app-action">Reintentar categorías</button></div>}
-            {!isCategoriesLoading && !categoriesError && activeCategories.length === 0 && <p className="app-muted mb-3 text-sm">No tenés categorías activas. <Link to="/ingresos/categorias" className="app-link">Administrar categorías</Link></p>}
+            {!isCategoriesLoading && !categoriesError && activeCategories.length === 0 && <p className="app-muted mb-3 text-sm">No tenés categorías activas. <Link to="/personal/categorias#ingresos" className="app-link">Administrar categorías</Link></p>}
             {actionError && !editingIncome && <p role="alert" className="app-error mb-3 text-sm">{actionError}</p>}
             {actionMessage && <p role="status" className="app-success mb-3 text-sm">{actionMessage}</p>}
             <button type="submit" disabled={isSubmitting || isCategoriesLoading || !!categoriesError || activeCategories.length === 0} className="app-button-primary w-full sm:w-auto">{isSubmitting ? 'Guardando...' : 'Registrar ingreso'}</button>

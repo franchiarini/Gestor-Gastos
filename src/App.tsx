@@ -20,9 +20,6 @@ import SharedMembersPage from './pages/shared/SharedMembersPage'
 import SharedManagementPage from './pages/shared/SharedManagementPage'
 import { IncomeLayout } from './layouts/IncomeLayout'
 import IncomeMovementsPage from './pages/incomes/IncomeMovementsPage'
-import IncomeCategoriesPage from './pages/incomes/IncomeCategoriesPage'
-import IncomeSummaryPage from './pages/incomes/IncomeSummaryPage'
-import IncomeEvolutionPage from './pages/incomes/IncomeEvolutionPage'
 import BalancePage from './pages/BalancePage'
 
 function PublicLayout() {
@@ -44,9 +41,9 @@ function App() {
         <Route path="ingresos" element={<IncomeLayout />}>
           <Route index element={<Navigate to="/ingresos/movimientos" replace />} />
           <Route path="movimientos" element={<IncomeMovementsPage />} />
-          <Route path="resumen" element={<IncomeSummaryPage />} />
-          <Route path="evolucion" element={<IncomeEvolutionPage />} />
-          <Route path="categorias" element={<IncomeCategoriesPage />} />
+          <Route path="resumen" element={<Navigate to="/personal/resumen#ingresos" replace />} />
+          <Route path="evolucion" element={<Navigate to="/personal/evolucion#ingresos" replace />} />
+          <Route path="categorias" element={<Navigate to="/personal/categorias#ingresos" replace />} />
         </Route>
         <Route path="personal" element={<PersonalSpaceLayout />}>
           <Route index element={<Navigate to="/personal/resumen" replace />} />

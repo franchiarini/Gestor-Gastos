@@ -13,7 +13,11 @@ function sortCategories(categories: IncomeCategory[]) {
   return [...categories].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
 }
 
-export default function IncomeCategoriesPage() {
+type IncomeCategoriesPageProps = {
+  embedded?: boolean
+}
+
+export default function IncomeCategoriesPage({ embedded = false }: IncomeCategoriesPageProps) {
   const [categories, setCategories] = useState<IncomeCategory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -158,7 +162,7 @@ export default function IncomeCategoriesPage() {
 
   return (
     <>
-      <SectionHeader id="income-categories-title" title="Categorías" description="Organizá el origen de tus ingresos con categorías propias." />
+      {!embedded && <SectionHeader id="income-categories-title" title="Categorías" description="Organizá el origen de tus ingresos con categorías propias." />}
       <section className="app-panel mx-auto max-w-4xl" aria-labelledby="income-categories-title">
         <form onSubmit={handleCreate} className="mb-6 flex flex-col gap-2 sm:flex-row">
           <input aria-label="Nombre de categoría de ingreso" value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} placeholder="Nombre de categoría" disabled={isSubmitting} className="app-control flex-1" />
