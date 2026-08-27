@@ -9,6 +9,7 @@ import { updateCategory } from '../../domain/updateCategory'
 import type { PersonalSpaceLayoutContext } from '../../layouts/PersonalSpaceLayout'
 import { SectionHeader } from '../../components/SectionHeader'
 import { EmptyState } from '../../components/EmptyState'
+import { useFinancialSectionHash } from '../../hooks/useFinancialSectionHash'
 import IncomeCategoriesPage from '../incomes/IncomeCategoriesPage'
 
 type CategorySection = 'gastos' | 'ingresos'
@@ -27,6 +28,8 @@ export default function PersonalCategoriesPage() {
   const [editingCategoryName, setEditingCategoryName] = useState('')
   const [categoryError, setCategoryError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const hashSection = hash === '#ingresos' ? 'ingresos' : hash === '#gastos' ? 'gastos' : null
+  useFinancialSectionHash(hashSection === null || activeSection === hashSection)
 
   useEffect(() => {
     let isMounted = true
@@ -43,8 +46,6 @@ export default function PersonalCategoriesPage() {
     if (hash !== '#gastos' && hash !== '#ingresos') return
     const section = hash.slice(1) as CategorySection
     setActiveSection(section)
-    const frameId = window.requestAnimationFrame(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-    return () => window.cancelAnimationFrame(frameId)
   }, [hash])
 
   function selectSection(section: CategorySection) {
