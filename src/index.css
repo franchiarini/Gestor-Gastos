@@ -241,3 +241,29 @@ input:-webkit-autofill:focus {
 :root.dark .hover\:bg-slate-100:hover {
   background-color: var(--color-surface-muted);
 }
+
+@keyframes chart-donut-enter {
+  from { stroke-dasharray: 0 100; }
+  to { stroke-dasharray: var(--segment-length) calc(100 - var(--segment-length)); }
+}
+
+@keyframes chart-bar-enter {
+  from { transform: scaleY(0); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.chart-donut-segment {
+  animation: chart-donut-enter 520ms ease-out both;
+}
+
+.chart-bar-enter {
+  animation: chart-bar-enter 480ms ease-out both;
+  transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-donut-segment,
+  .chart-bar-enter {
+    animation: none;
+  }
+}

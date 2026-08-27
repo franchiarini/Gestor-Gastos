@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getExpenseEvolution } from '../domain/getExpenseEvolution'
 import type { EvolutionPoint, ExpenseEvolution as ExpenseEvolutionData } from '../domain/getExpenseEvolution'
 import { EmptyState } from './EmptyState'
+import { InteractiveEvolutionChart } from './InteractiveEvolutionChart'
 
 type ExpenseEvolutionProps = {
   spaceId: string
@@ -39,30 +40,8 @@ function formatChange(point: EvolutionPoint, index: number) {
   return `${point.percentageChange > 0 ? '+' : ''}${point.percentageChange}%`
 }
 
-function EvolutionChart({ points, colorClass }: { points: EvolutionPoint[]; colorClass: string }) {
-  const maximum = Math.max(...points.map((point) => point.amount), 0)
-
-  return (
-    <div className="flex items-end gap-1 sm:gap-3" role="img" aria-label="Evolución mensual de gastos">
-      {points.map((point, index) => {
-        const height = maximum === 0 ? 0 : Math.max((point.amount / maximum) * 100, point.amount > 0 ? 4 : 0)
-        return (
-          <div key={point.month} className="flex min-w-0 flex-1 flex-col items-center">
-            <span className="mb-2 max-w-full text-center text-[0.65rem] font-semibold text-gray-700 sm:text-xs" title={currencyFormatter.format(point.amount)}>
-              {compactCurrencyFormatter.format(point.amount)}
-            </span>
-            <div className="flex h-36 w-full items-end justify-center rounded-t-lg bg-white/70 dark:bg-white/10 sm:h-44">
-              <div className={`w-3/5 rounded-t-lg ${colorClass}`} style={{ height: `${height}%` }} />
-            </div>
-            <span className="mt-2 text-xs font-semibold text-gray-800">{formatMonth(point.month)}</span>
-            <span className="mt-1 min-h-8 break-words text-center text-[0.6rem] leading-tight text-gray-600 sm:text-[0.7rem]">
-              {formatChange(point, index)}
-            </span>
-          </div>
-        )
-      })}
-    </div>
-  )
+function preparePoints(points: EvolutionPoint[]) {
+  return points.map((point, index) => ({ month: point.month, amount: point.amount, changeLabel: formatChange(point, index) }))
 }
 
 export function ExpenseEvolution({ spaceId, refreshKey, emptyTitle = 'Todavía no hay movimientos suficientes para mostrar una evolución.' }: ExpenseEvolutionProps) {
@@ -114,7 +93,7 @@ export function ExpenseEvolution({ spaceId, refreshKey, emptyTitle = 'Todavía n
         <div className="grid gap-5 lg:grid-cols-2">
           <article className="min-w-0 rounded-3xl bg-sky-100 p-5 shadow-sm dark:bg-sky-950/70 sm:p-6">
             <h3 className="mb-6 text-xl font-bold text-gray-900">Evolución mensual</h3>
-            <EvolutionChart points={evolution.totals} colorClass="bg-sky-600 dark:bg-sky-400" />
+            <InteractiveEvolutionChart points={preparePoints(evolution.totals)} colorClass="bg-sky-600 dark:bg-sky-400" accessibleName="Evolución mensual de gastos" currencyFormatter={currencyFormatter} compactCurrencyFormatter={compactCurrencyFormatter} formatMonth={formatMonth} />
           </article>
           <article className="min-w-0 rounded-3xl bg-fuchsia-100 p-5 shadow-sm dark:bg-fuchsia-950/70 sm:p-6">
             <h3 className="mb-4 text-xl font-bold text-gray-900">Evolución por categoría</h3>
@@ -125,7 +104,7 @@ export function ExpenseEvolution({ spaceId, refreshKey, emptyTitle = 'Todavía n
             {selectedCategory && (
               <>
                 <p className="mb-4 break-words font-semibold text-fuchsia-900 dark:text-fuchsia-100">{selectedCategory.name} · {currencyFormatter.format(selectedCategory.total)}</p>
-                <EvolutionChart points={selectedCategory.points} colorClass="bg-fuchsia-600 dark:bg-fuchsia-400" />
+                <InteractiveEvolutionChart key={selectedCategory.categoryId} points={preparePoints(selectedCategory.points)} colorClass="bg-fuchsia-600 dark:bg-fuchsia-400" accessibleName={`Evolución mensual de gastos de ${selectedCategory.name}`} currencyFormatter={currencyFormatter} compactCurrencyFormatter={compactCurrencyFormatter} formatMonth={formatMonth} />
               </>
             )}
           </article>

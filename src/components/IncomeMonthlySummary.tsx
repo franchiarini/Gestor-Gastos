@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
-import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { getIncomeMonthlySummary } from '../domain/getIncomeMonthlySummary'
 import type { IncomeMonthlySummary as IncomeMonthlySummaryData } from '../domain/getIncomeMonthlySummary'
 import { EmptyState } from './EmptyState'
-
-type CategoryView = 'distribution' | 'detail'
+import { InteractiveDonut } from './InteractiveDonut'
+import { FinancialSummaryHero } from './FinancialSummaryHero'
 
 type IncomeMonthlySummaryProps = {
   month?: string
@@ -58,23 +57,11 @@ function formatPercentage(percentage: number) {
   return `${percentageFormatter.format(percentage)}%`
 }
 
-function getDonutStyle(items: Array<{ percentage: number }>): CSSProperties {
-  let accumulatedPercentage = 0
-  const segments = items.map((item, index) => {
-    const start = accumulatedPercentage
-    accumulatedPercentage += item.percentage
-    return `${chartColors[index % chartColors.length]} ${start}% ${Math.min(accumulatedPercentage, 100)}%`
-  })
-
-  return { background: `conic-gradient(${segments.join(', ')})` }
-}
-
 export function IncomeMonthlySummary({ month: controlledMonth, showMonthNavigation = true }: IncomeMonthlySummaryProps = {}) {
   const currentMonth = getCurrentMonth()
   const [internalMonth, setInternalMonth] = useState(currentMonth)
   const month = controlledMonth ?? internalMonth
   const [summary, setSummary] = useState<IncomeMonthlySummaryData | null>(null)
-  const [categoryView, setCategoryView] = useState<CategoryView>('distribution')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [retryCount, setRetryCount] = useState(0)
@@ -132,36 +119,12 @@ export function IncomeMonthlySummary({ month: controlledMonth, showMonthNavigati
 
       {!isLoading && !error && summary && summary.incomeCount > 0 && (
         <>
-          <div className="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4 [scrollbar-width:none] md:grid md:grid-cols-3 md:gap-5 md:overflow-visible">
-            <article className="flex min-h-[25rem] min-w-[88%] snap-center flex-col items-center justify-center overflow-hidden rounded-3xl bg-emerald-700 p-6 text-center text-white shadow-sm md:min-w-0">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-emerald-100">Total ingresado</p>
-              <h4 className="mb-8 text-2xl font-bold sm:text-3xl">{formatMonth(summary.month)}</h4>
-              <p className="min-w-0 max-w-full whitespace-nowrap font-bold leading-tight [font-size:clamp(1.4rem,7vw,2.75rem)] sm:[font-size:clamp(1.625rem,2.8vw,2.75rem)]">{currencyFormatter.format(summary.totalIncome)}</p>
-              <p className="mt-6 text-lg text-emerald-100">{summary.incomeCount} {summary.incomeCount === 1 ? 'ingreso' : 'ingresos'}</p>
-            </article>
+          <div className="space-y-5">
+            <FinancialSummaryHero tone="income" month={formatMonth(summary.month)} label="Ingresaste este mes" total={currencyFormatter.format(summary.totalIncome)} movementCount={summary.incomeCount} movementLabel="movimiento" principalName={principalCategory?.name} principalPercentage={principalCategory ? formatPercentage(principalCategory.percentage) : undefined} donut={<InteractiveDonut key={`income-categories-${summary.month}`} items={summary.categories.map((category) => ({ id: category.categoryId, name: category.name, amount: category.amount, percentage: category.percentage, detail: category.status === 'ARCHIVADA' ? 'Archivada' : `${category.incomeCount} ${category.incomeCount === 1 ? 'ingreso' : 'ingresos'}` }))} total={summary.totalIncome} accessibleName="Distribución porcentual de ingresos por categoría" centerLabel="Total del mes" currencyFormatter={currencyFormatter} percentageFormatter={formatPercentage} colors={chartColors} />} />
 
-            <article className="min-h-[25rem] min-w-[88%] snap-center overflow-hidden rounded-3xl bg-violet-100 p-5 text-gray-900 shadow-sm dark:bg-violet-950/70 sm:p-6 md:min-w-0">
-              <h4 className="mb-4 text-center text-xl font-bold">Categorías</h4>
-              <div className="mb-5 grid grid-cols-2 rounded-xl bg-white/70 p-1 text-sm dark:bg-white/10" aria-label="Vista de categorías de ingreso">
-                <button type="button" onClick={() => setCategoryView('distribution')} aria-pressed={categoryView === 'distribution'} className={`rounded-lg px-2 py-2 font-semibold ${categoryView === 'distribution' ? 'bg-violet-600 text-white' : 'text-gray-700 dark:text-violet-100'}`}>Distribución</button>
-                <button type="button" onClick={() => setCategoryView('detail')} aria-pressed={categoryView === 'detail'} className={`rounded-lg px-2 py-2 font-semibold ${categoryView === 'detail' ? 'bg-violet-600 text-white' : 'text-gray-700 dark:text-violet-100'}`}>Detalle</button>
-              </div>
-              {categoryView === 'distribution' ? (
-                <div>
-                  <div className="relative mx-auto mb-5 aspect-square w-40 rounded-full sm:w-44" style={getDonutStyle(summary.categories)} role="img" aria-label="Distribución porcentual de ingresos por categoría">
-                    <div className="absolute inset-[24%] flex items-center justify-center rounded-full bg-violet-100 text-center text-sm font-bold dark:bg-violet-950">100%</div>
-                  </div>
-                  <ul className="space-y-2">
-                    {summary.categories.map((category, index) => (
-                      <li key={category.categoryId} className="flex min-w-0 items-start gap-2 text-sm">
-                        <span className="mt-1 h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: chartColors[index % chartColors.length] }} aria-hidden="true" />
-                        <span className="min-w-0 flex-1 break-words font-medium">{category.name}{category.status === 'ARCHIVADA' && <span className="ml-1 text-xs font-normal text-gray-600 dark:text-violet-200">(Archivada)</span>}</span>
-                        <span className="shrink-0 font-semibold">{formatPercentage(category.percentage)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
+            <div className="grid gap-5 lg:grid-cols-2">
+            <article className="min-w-0 rounded-3xl border border-violet-200 bg-violet-50 p-5 text-gray-900 shadow-sm dark:border-violet-900 dark:bg-violet-950/45 sm:p-6">
+              <h4 className="mb-5 text-xl font-bold dark:text-gray-100">Detalle por categoría</h4>
                 <div className="space-y-4">
                   {summary.categories.map((category) => (
                     <div key={category.categoryId} className="min-w-0">
@@ -173,11 +136,10 @@ export function IncomeMonthlySummary({ month: controlledMonth, showMonthNavigati
                     </div>
                   ))}
                 </div>
-              )}
             </article>
 
             {principalCategory && (
-              <article className="flex min-h-[25rem] min-w-[88%] snap-center flex-col overflow-hidden rounded-3xl bg-sky-100 p-6 text-gray-900 shadow-sm dark:bg-sky-950/70 md:min-w-0">
+              <article className="flex min-w-0 flex-col overflow-hidden rounded-3xl bg-sky-100 p-6 text-gray-900 shadow-sm dark:bg-sky-950/70">
                 <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-sky-800 dark:text-sky-200">Principal fuente</p>
                 <div className="flex flex-1 flex-col justify-center">
                   <h4 className="mb-6 break-words text-2xl font-bold sm:text-3xl">{principalCategory.name}</h4>
@@ -188,8 +150,8 @@ export function IncomeMonthlySummary({ month: controlledMonth, showMonthNavigati
                 </div>
               </article>
             )}
+            </div>
           </div>
-          <div className="flex justify-center gap-2 md:hidden" aria-hidden="true">{Array.from({ length: principalCategory ? 3 : 2 }, (_, index) => <span key={index} className="h-1.5 w-1.5 rounded-full bg-gray-300 dark:bg-slate-600" />)}</div>
         </>
       )}
     </section>

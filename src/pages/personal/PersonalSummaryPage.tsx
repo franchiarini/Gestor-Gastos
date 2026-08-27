@@ -38,14 +38,16 @@ export default function PersonalSummaryPage() {
         <h2 className="app-text min-w-0 text-center text-lg font-semibold sm:text-2xl">{formatMonth(month)}</h2>
         <button type="button" onClick={() => setMonth((value) => shiftMonth(value, 1))} disabled={month >= currentMonth} className="app-button-secondary justify-self-end px-2 text-sm sm:px-3 sm:text-base"><span className="hidden sm:inline">Mes siguiente</span><span className="sm:hidden">Siguiente</span></button>
       </div>
+      <div className="space-y-12">
       <section id="gastos" className="scroll-mt-24" aria-labelledby="personal-expense-summary-title">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 id="personal-expense-summary-title" className="app-text text-2xl font-bold">Gastos</h2><Link to="/gastos?space=personal" className="app-button-secondary">Registrar gasto</Link></div>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-l-4 border-blue-600 pl-4"><div><p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">Resumen personal</p><h2 id="personal-expense-summary-title" className="app-text text-2xl font-bold sm:text-3xl">Gastos</h2></div><Link to="/gastos?space=personal" className="app-button-secondary">Registrar gasto</Link></div>
         <MonthlySummary spaceId={spaceId} showMembers={false} month={month} showMonthNavigation={false} />
       </section>
-      <section id="ingresos" className="scroll-mt-24 border-t border-[var(--color-border)] pt-8" aria-labelledby="personal-income-summary-title">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 id="personal-income-summary-title" className="app-text text-2xl font-bold">Ingresos</h2><Link to="/ingresos/movimientos" className="app-button-secondary">Registrar ingreso</Link></div>
+      <section id="ingresos" className="scroll-mt-24 border-t border-[var(--color-border)] pt-10" aria-labelledby="personal-income-summary-title">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-l-4 border-emerald-600 pl-4"><div><p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">Resumen personal</p><h2 id="personal-income-summary-title" className="app-text text-2xl font-bold sm:text-3xl">Ingresos</h2></div><Link to="/ingresos/movimientos" className="app-button-secondary">Registrar ingreso</Link></div>
         <IncomeMonthlySummary month={month} showMonthNavigation={false} />
       </section>
+      </div>
     </section>
   )
 }

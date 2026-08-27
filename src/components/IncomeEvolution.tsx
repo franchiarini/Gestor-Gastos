@@ -6,6 +6,7 @@ import type {
   IncomeEvolutionPoint,
 } from '../domain/getIncomeEvolution'
 import { EmptyState } from './EmptyState'
+import { InteractiveEvolutionChart } from './InteractiveEvolutionChart'
 
 const currencyFormatter = new Intl.NumberFormat('es-AR', {
   style: 'currency',
@@ -42,44 +43,8 @@ function formatChange(point: IncomeEvolutionPoint, index: number) {
   return `${sign}${percentageFormatter.format(point.percentageChange)}%`
 }
 
-type EvolutionChartProps = {
-  points: IncomeEvolutionPoint[]
-  colorClass: string
-  accessibleName: string
-}
-
-function EvolutionChart({ points, colorClass, accessibleName }: EvolutionChartProps) {
-  const maximum = Math.max(...points.map((point) => point.amount), 0)
-
-  return (
-    <div className="flex items-end gap-1 sm:gap-3" role="img" aria-label={accessibleName}>
-      {points.map((point, index) => {
-        const height = maximum === 0
-          ? 0
-          : Math.max((point.amount / maximum) * 100, point.amount > 0 ? 4 : 0)
-
-        return (
-          <div key={point.month} className="flex min-w-0 flex-1 flex-col items-center">
-            <span
-              className="mb-2 max-w-full text-center text-[0.65rem] font-semibold text-gray-700 dark:text-gray-200 sm:text-xs"
-              title={currencyFormatter.format(point.amount)}
-            >
-              {compactCurrencyFormatter.format(point.amount)}
-            </span>
-            <div className="flex h-36 w-full items-end justify-center rounded-t-lg bg-white/70 dark:bg-white/10 sm:h-44">
-              <div className={`w-3/5 rounded-t-lg ${colorClass}`} style={{ height: `${height}%` }} />
-            </div>
-            <span className="mt-2 text-xs font-semibold text-gray-800 dark:text-gray-100">
-              {formatMonth(point.month)}
-            </span>
-            <span className="mt-1 min-h-8 break-words text-center text-[0.6rem] leading-tight text-gray-600 dark:text-gray-300 sm:text-[0.7rem]">
-              {formatChange(point, index)}
-            </span>
-          </div>
-        )
-      })}
-    </div>
-  )
+function preparePoints(points: IncomeEvolutionPoint[]) {
+  return points.map((point, index) => ({ month: point.month, amount: point.amount, changeLabel: formatChange(point, index) }))
 }
 
 export function IncomeEvolution() {
@@ -155,10 +120,13 @@ export function IncomeEvolution() {
         <div className="grid gap-5 lg:grid-cols-2">
           <article className="min-w-0 rounded-3xl bg-emerald-100 p-5 shadow-sm dark:bg-emerald-950/70 sm:p-6">
             <h3 className="mb-6 text-xl font-bold text-gray-900 dark:text-gray-100">Evolución mensual</h3>
-            <EvolutionChart
-              points={evolution.totals}
+            <InteractiveEvolutionChart
+              points={preparePoints(evolution.totals)}
               colorClass="bg-emerald-600 dark:bg-emerald-400"
               accessibleName="Evolución mensual del total de ingresos"
+              currencyFormatter={currencyFormatter}
+              compactCurrencyFormatter={compactCurrencyFormatter}
+              formatMonth={formatMonth}
             />
           </article>
 
@@ -188,10 +156,14 @@ export function IncomeEvolution() {
                     <span className="ml-2 text-xs font-normal text-violet-700 dark:text-violet-200">Archivada</span>
                   )}
                 </p>
-                <EvolutionChart
-                  points={selectedCategory.points}
+                <InteractiveEvolutionChart
+                  key={selectedCategory.categoryId}
+                  points={preparePoints(selectedCategory.points)}
                   colorClass="bg-violet-600 dark:bg-violet-400"
                   accessibleName={`Evolución mensual de ingresos de ${selectedCategory.name}`}
+                  currencyFormatter={currencyFormatter}
+                  compactCurrencyFormatter={compactCurrencyFormatter}
+                  formatMonth={formatMonth}
                 />
               </>
             )}
