@@ -1,4 +1,4 @@
-# Gestor de Gastos
+# Nido — Gestor de Gastos
 
 Aplicación web para organizar gastos personales y compartidos de forma simple.
 

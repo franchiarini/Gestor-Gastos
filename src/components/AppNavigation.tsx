@@ -112,7 +112,7 @@ export function AppNavigation({
       <div className="flex min-h-[4.75rem] items-center justify-between border-b border-[var(--color-border)] bg-gradient-to-b from-blue-50/70 to-transparent px-5 dark:from-blue-950/25">
         <span className="flex min-w-0 items-center gap-3">
           <span className="rounded-xl bg-blue-50 p-1.5 ring-1 ring-blue-100 dark:bg-blue-950/50 dark:ring-blue-900"><BrandMark /></span>
-          <span className="min-w-0"><span className="block truncate text-base font-extrabold tracking-tight text-[var(--color-text)]">Gestor de Gastos</span><span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">Finanzas simples</span></span>
+          <span className="min-w-0"><span className="block truncate text-base font-extrabold tracking-tight text-[var(--color-text)]">Nido</span><span className="block text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">Gestor de Gastos</span></span>
         </span>
         <button type="button" onClick={onClose} aria-label="Cerrar navegación" className="app-action min-h-11 min-w-11 lg:hidden">
           ×
