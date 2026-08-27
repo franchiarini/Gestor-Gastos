@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { supabase } from '../../lib/supabase'
 import { AuthBackground } from '../../components/AuthBackground'
+import { isValidPassword, MIN_PASSWORD_LENGTH, PASSWORD_REQUIREMENT_MESSAGE } from '../../auth/passwordPolicy'
 
 function RegisterPage() {
   const navigate = useNavigate()
@@ -25,6 +26,11 @@ function RegisterPage() {
 
     if (!normalizedName) {
       setError('El nombre no puede estar vacío.')
+      return
+    }
+
+    if (!isValidPassword(password)) {
+      setError(PASSWORD_REQUIREMENT_MESSAGE)
       return
     }
 
@@ -97,9 +103,11 @@ function RegisterPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
+              minLength={MIN_PASSWORD_LENGTH}
               disabled={isSubmitting}
               className="app-control"
             />
+            <p className="app-muted mt-1 text-sm">{PASSWORD_REQUIREMENT_MESSAGE}</p>
           </div>
 
           {error && (

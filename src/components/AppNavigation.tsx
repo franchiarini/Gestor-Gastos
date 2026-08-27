@@ -4,6 +4,7 @@ import { NavLink, useLocation } from 'react-router'
 import type { SharedSpace } from '../domain/getSharedSpaces'
 import { ThemeToggle } from './ThemeToggle'
 import { BrandMark } from './BrandMark'
+import { useAuth } from '../auth/AuthContext'
 
 type AppNavigationProps = {
   isOpen: boolean
@@ -58,6 +59,7 @@ export function AppNavigation({
   onClose,
   onSignOut,
 }: AppNavigationProps) {
+  const { user } = useAuth()
   const { pathname } = useLocation()
   const activeSpaceId = pathname.match(/^\/spaces\/([^/]+)/)?.[1] ?? null
   const [isPersonalExpanded, setIsPersonalExpanded] = useState(() => pathname.startsWith('/personal/'))
@@ -65,6 +67,10 @@ export function AppNavigation({
   const [expandedSpaceId, setExpandedSpaceId] = useState<string | null>(activeSpaceId)
   const activeSpaces = sharedSpaces.filter((space) => space.estado === 'ACTIVO')
   const archivedSpaces = sharedSpaces.filter((space) => space.estado === 'ARCHIVADO')
+  const metadataName = typeof user?.user_metadata?.nombre === 'string' ? user.user_metadata.nombre.trim() : ''
+  const email = user?.email ?? ''
+  const avatarSource = metadataName || email
+  const avatarInitial = Array.from(avatarSource.trim())[0]?.toLocaleUpperCase('es-AR') ?? '?'
 
   useEffect(() => {
     if (pathname.startsWith('/personal/')) setIsPersonalExpanded(true)
@@ -165,6 +171,11 @@ export function AppNavigation({
       </nav>
 
       <div className="border-t border-[var(--color-border)] bg-[var(--color-surface-muted)]/40 p-3.5">
+        <NavLink to="/perfil" onClick={onClose} className={({ isActive }) => `mb-3 flex min-h-14 w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${isActive ? 'border-blue-200 bg-blue-50 shadow-[inset_3px_0_0_#2563eb] dark:border-blue-900 dark:bg-blue-950/55' : 'border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-muted)]'}`}>
+          <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm">{avatarInitial}</span>
+          <span className="min-w-0 flex-1">{metadataName && <span className="app-text block truncate text-sm font-bold">{metadataName}</span>}<span className={`app-muted block truncate ${metadataName ? 'text-xs' : 'text-sm font-semibold'}`}>{email || 'Cuenta'}</span></span>
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0 text-[var(--color-text-muted)]"><path d="m7 4 6 6-6 6" /></svg>
+        </NavLink>
         <p className="mb-2 px-1 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[var(--color-text-muted)]">Apariencia</p>
         <ThemeToggle variant="inline" />
         <button type="button" onClick={onSignOut} disabled={isSigningOut} className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm font-semibold text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60">
