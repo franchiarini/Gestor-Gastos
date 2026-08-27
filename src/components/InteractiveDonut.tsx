@@ -22,6 +22,18 @@ type InteractiveDonutProps = {
 export function InteractiveDonut({ items, total, accessibleName, centerLabel, currencyFormatter, percentageFormatter, colors }: InteractiveDonutProps) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const activeItem = items.find((item) => item.id === activeId) ?? null
+  const centerAmount = activeItem?.amount ?? total
+  const exactCenterAmount = currencyFormatter.format(centerAmount)
+  const formatterOptions = currencyFormatter.resolvedOptions()
+  const compactCurrencyFormatter = new Intl.NumberFormat(formatterOptions.locale, {
+    style: 'currency',
+    currency: formatterOptions.currency,
+    notation: 'compact',
+    maximumFractionDigits: 2,
+  })
+  const displayedCenterAmount = exactCenterAmount.length > 12
+    ? compactCurrencyFormatter.format(centerAmount)
+    : exactCenterAmount
   let accumulated = 0
 
   function toggleItem(id: string) {
@@ -41,9 +53,9 @@ export function InteractiveDonut({ items, total, accessibleName, centerLabel, cu
             return <circle key={item.id} cx="60" cy="60" r="48" pathLength="100" fill="none" stroke={colors[index % colors.length]} strokeWidth={isActive ? 18 : 15} strokeLinecap="butt" strokeDasharray={`${Math.min(item.percentage, 100)} ${Math.max(100 - item.percentage, 0)}`} strokeDashoffset={offset} className={`chart-donut-segment cursor-pointer transition-[opacity,stroke-width] duration-300 ${isDimmed ? 'opacity-25' : 'opacity-100'}`} style={{ '--segment-length': Math.min(item.percentage, 100) } as CSSProperties} onPointerEnter={() => setActiveId(item.id)} onClick={() => toggleItem(item.id)} />
           })}
         </svg>
-        <div className="pointer-events-none absolute inset-[22%] flex flex-col items-center justify-center rounded-full bg-[var(--color-surface)] px-2 text-center shadow-inner">
+        <div className="pointer-events-none absolute inset-[22%] flex min-w-0 flex-col items-center justify-center overflow-hidden rounded-full bg-[var(--color-surface)] px-2 text-center shadow-inner">
           <span className="app-muted max-w-full truncate text-[0.62rem] font-semibold uppercase tracking-wide sm:text-xs">{activeItem?.name ?? centerLabel}</span>
-          <strong className="app-text mt-1 max-w-full whitespace-nowrap text-sm leading-tight sm:text-base">{currencyFormatter.format(activeItem?.amount ?? total)}</strong>
+          <strong aria-label={exactCenterAmount} className="app-text mt-1 max-w-full whitespace-nowrap font-bold leading-none tracking-tight [font-size:clamp(0.72rem,3.2vw,0.95rem)]">{displayedCenterAmount}</strong>
           {activeItem && <span className="app-muted mt-1 text-xs font-semibold">{percentageFormatter(activeItem.percentage)}</span>}
         </div>
       </div>
