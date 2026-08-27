@@ -13,7 +13,7 @@ export function ThemeToggle({ variant = 'floating' }: { variant?: 'floating' | '
         type="button"
         aria-pressed={theme === 'light'}
         onClick={() => setTheme('light')}
-        className={`min-h-10 flex-1 rounded-lg px-3 text-sm font-semibold ${theme === 'light' ? 'bg-blue-600 text-white' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]'}`}
+        className={`min-h-9 flex-1 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${theme === 'light' ? 'bg-blue-600 text-white shadow-sm' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]'}`}
       >
         Claro
       </button>
@@ -21,7 +21,7 @@ export function ThemeToggle({ variant = 'floating' }: { variant?: 'floating' | '
         type="button"
         aria-pressed={theme === 'dark'}
         onClick={() => setTheme('dark')}
-        className={`min-h-10 flex-1 rounded-lg px-3 text-sm font-semibold ${theme === 'dark' ? 'bg-blue-600 text-white' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]'}`}
+        className={`min-h-9 flex-1 rounded-lg px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${theme === 'dark' ? 'bg-blue-600 text-white shadow-sm' : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)] hover:text-[var(--color-text)]'}`}
       >
         Oscuro
       </button>

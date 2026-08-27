@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Outlet } from 'react-router'
 import { AppNavigation } from '../components/AppNavigation'
+import { BrandMark } from '../components/BrandMark'
 import { getSharedSpaces } from '../domain/getSharedSpaces'
 import type { SharedSpace } from '../domain/getSharedSpaces'
 import { supabase } from '../lib/supabase'
@@ -62,9 +63,10 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[var(--color-page)] lg:pl-72">
-      <header className="sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 lg:hidden">
-        <button type="button" onClick={() => setIsNavigationOpen(true)} aria-label="Abrir navegación" aria-expanded={isNavigationOpen} aria-controls="app-navigation" className="app-action min-h-11 min-w-11 text-xl">☰</button>
-        <span className="font-bold text-[var(--color-text)]">Gestor de Gastos</span>
+      <header className="sticky top-0 z-30 flex min-h-16 items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-4 shadow-sm lg:hidden">
+        <button type="button" onClick={() => setIsNavigationOpen(true)} aria-label="Abrir navegación" aria-expanded={isNavigationOpen} aria-controls="app-navigation" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-[var(--color-text-muted)] transition hover:bg-[var(--color-surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-5 w-5"><path d="M4 6h16M4 12h16M4 18h16" /></svg></button>
+        <BrandMark />
+        <span className="font-bold tracking-tight text-[var(--color-text)]">Gestor de Gastos</span>
       </header>
 
       {isNavigationOpen && <button type="button" aria-label="Cerrar navegación" onClick={() => setIsNavigationOpen(false)} className="fixed inset-0 z-40 bg-slate-950/55 lg:hidden" />}
