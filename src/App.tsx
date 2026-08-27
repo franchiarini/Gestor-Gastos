@@ -22,6 +22,8 @@ import { IncomeLayout } from './layouts/IncomeLayout'
 import IncomeMovementsPage from './pages/incomes/IncomeMovementsPage'
 import BalancePage from './pages/BalancePage'
 import ProfilePage from './pages/ProfilePage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 
 function PublicLayout() {
   return <Outlet />
@@ -68,6 +70,8 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/check-email" element={<CheckEmailPage />} />
         <Route path="/auth/confirmed" element={<EmailConfirmedPage />} />
         <Route

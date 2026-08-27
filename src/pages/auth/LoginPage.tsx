@@ -1,15 +1,23 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { supabase } from '../../lib/supabase'
 import { AuthBackground } from '../../components/AuthBackground'
 
 function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [passwordResetMessage] = useState(() => Boolean((location.state as { passwordReset?: boolean } | null)?.passwordReset))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (passwordResetMessage) {
+      navigate('/login', { replace: true, state: null })
+    }
+  }, [navigate, passwordResetMessage])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -59,6 +67,12 @@ function LoginPage() {
             />
           </div>
 
+          {passwordResetMessage && (
+            <p role="status" aria-live="polite" className="app-success text-sm">
+              Contraseña actualizada correctamente. Ya podés iniciar sesión.
+            </p>
+          )}
+
           <div>
             <label htmlFor="password" className="app-muted mb-1 block text-sm font-semibold">
               Contraseña
@@ -72,6 +86,9 @@ function LoginPage() {
               disabled={isSubmitting}
               className="app-control"
             />
+            <Link to="/forgot-password" className="app-link mt-2 text-sm">
+              ¿Olvidaste tu contraseña?
+            </Link>
           </div>
 
           {error && (

@@ -34,26 +34,14 @@ export default function ProfilePage() {
       setError('Las contraseñas no coinciden.')
       return
     }
-    if (!email) {
-      setError('No pudimos identificar el email de tu cuenta.')
-      return
-    }
-
     setIsSubmitting(true)
     try {
-      const { error: reauthenticationError } = await supabase.auth.signInWithPassword({
-        email,
-        password: currentPassword,
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+        current_password: currentPassword,
       })
-
-      if (reauthenticationError) {
-        setError(reauthenticationError.code === 'invalid_credentials' ? 'La contraseña actual no es correcta.' : 'No pudimos verificar tu contraseña actual. Intentá nuevamente.')
-        return
-      }
-
-      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
       if (updateError) {
-        setError('No pudimos actualizar la contraseña. Intentá nuevamente.')
+        setError(updateError.code === 'current_password_mismatch' ? 'La contraseña actual no es correcta.' : 'No pudimos actualizar la contraseña. Intentá nuevamente.')
         return
       }
 
